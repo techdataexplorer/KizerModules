@@ -8,18 +8,21 @@ import pandas as pd
 # USE MAP CROSSING METHOD TO FIND TOPOGRAPHIC MAP FOR MIDPOINT
 # Find Maps
 #def Lable1000(Latitude1, Longitude1, TheOption):
-def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USGS250kFilePath):
-
-    Latitude = Latitude1
-    Longitude = Longitude1      # WEST = NEGATIVE IN GLOBAL MAPPER
+def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles):
+	
+    Latitude = LATITUDEA
+    Longitude = LONGITUDEA # WEST = NEGATIVE IN GLOBAL MAPPER
     FirstFlag = 1
+    LatInc, LongInc = None, None
+    Lat2 = LATITUDEB
+    Long2 = LONGITUDEB
 
-	#GOSUB 1050 'AddGlobalFile
+    # GOSUB 1050 AddGlobalFile
+    AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
 
     if TheOption == 4:
-        print() #remove me
-        #Gtopo30(1, 1) = T1
-	    #Gtopo30(1, 2) = T2
+        Gtopo30[0][0] = T1
+        Gtopo30[0][1] = T2
     else:
         if LandUseFlag == 0:
             LatInc = 1
@@ -59,14 +62,13 @@ def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USG
         if Longitude2 < Longitude1:
             LongInc = -LongInc
 
-        #FOR ACase = 1 TO 2
-        for ACase in range(2):
+        for ACase in range(1, 3):
             if ACase == 1:#  CALCULATE LATITUDE CROSSING
                 Lat2 = Latitude1
-                Long2 = int(math.abs(Longitude1) / math.abs(LongInc)) * math.abs(LongInc) * numpy.sign(Longitude1)
+                Long2 = int(abs(Longitude1) / abs(LongInc)) * abs(LongInc) * numpy.sign(Longitude1)
                 if LongInc > 0 and Long2 < Longitude1 or LongInc < 0 and Long2 > Longitude1:Long2 = Long2 + LongInc
             else:       #  CALCULATE LONGITUDE CROSSING
-                Lat2 = int(math.abs(Latitude1) / math.abs(LatInc)) * math.abs(LatInc) * numpy.sign(Latitude1)
+                Lat2 = int(abs(Latitude1) / abs(LatInc)) * abs(LatInc) * numpy.sign(Latitude1)
                 if LatInc > 0 and Lat2 < Latitude1 or LatInc < 0 and Lat2 > Latitude1:Lat2 = Lat2 + LatInc
                 Long2 = Longitude1
             #END if
@@ -79,12 +81,12 @@ def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USG
                     else:
                         Lat2 = (((Latitude2 - Latitude1) / (Longitude2 - Longitude1)) * (Long2 - Longitude1)) + Latitude1
                         Latitude = Lat2
-                        Longitude = Long2 + math.abs(LongInc / 2)
+                        Longitude = Long2 + abs(LongInc / 2)
                         #GOSUB 1050 # AddGlobalFile
-                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
-                        Longitude = Long2 - math.abs(LongInc / 2)
+                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
+                        Longitude = Long2 - abs(LongInc / 2)
                         #GOSUB 1050 # AddGlobalFile
-                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
+                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
                         Long2 = Long2 + LongInc
                     #END if
                 else:
@@ -92,26 +94,22 @@ def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USG
                         EndFlag = 1
                     else:
                         Long2 = (((Longitude2 - Longitude1) / (Latitude2 - Latitude1)) * (Lat2 - Latitude1)) + Longitude1
-                        Latitude = Lat2 + math.abs(LatInc / 2)
+                        Latitude = Lat2 + abs(LatInc / 2)
                         Longitude = Long2
                         #GOSUB 1050 # AddGlobalFile
-                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
-                        Latitude = Lat2 - math.abs(LatInc / 2)
+                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
+                        Latitude = Lat2 - abs(LatInc / 2)
                         #GOSUB 1050 # AddGlobalFile
-                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
+                        AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
                         Lat2 = Lat2 + LatInc
                     #END if
                 #END if
-            #LOOP UNTIL EndFlag = 1
-        #NEXT ACase
-    #END SELECT
 
-
-    Latitude = Latitude2
-    Longitude = Longitude2      #  WEST = NEGATIVE IN GLOBAL MAPPER
+    Latitude = LATITUDEB    # Latitude2
+    Longitude = LONGITUDEB   # Longitude2      #  WEST = NEGATIVE IN GLOBAL MAPPER
     FirstFlag = 1
-    #GOSUB 1050 # AddGlobalFile
-    AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
+    #GOSUB 1050 AddGlobalFile
+    AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
 
     if TheOption == 4:
         Gtopo30[1][0] = T1
@@ -119,10 +117,10 @@ def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USG
         if Gtopo30[0][0] != Gtopo30[1][0] and Gtopo30[0][1] != Gtopo30[1][1]:
             FirstFlag = 2
             #GOSUB 1050 # AddGlobalFile
-            AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
+            AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
             FirstFlag = 3
             #GOSUB 1050 # AddGlobalFile
-            AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath)
+            AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
         #END if
     #END if
 
@@ -158,7 +156,7 @@ def findMaps(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB, USGSindxFilePath, USG
 #                if GlobalTerrain(T) == NewGlobalFile(1):
 #                    GOTO 1070
             
-def AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath):
+def AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles):
     if LandUseFlag == 0:
         if TheOption == 4:
             if FirstFlag == 1:
@@ -186,18 +184,20 @@ def AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFile
         elif TheOption == 12:
             FindNED10m(Latitude, Longitude)
         
-        if NewGlobalFile[0]:
+        if NewGlobalFile[0] != "":
             for T in range(MaxGlobal):
-                if GlobalTerrain[T]:
+                if GlobalTerrain[T] == "":
                     GlobalTerrain[T] = NewGlobalFile[0]
                     NumTerrainFiles = T
+                    break
                 if GlobalTerrain[T] == NewGlobalFile[0]:
                     if NumTerrainFiles > (MaxGlobal - 1):
                         print("Number of terrain files meets or exceeds MaxGlobal limit")
                         print("Program terminated")
                         exit(0)
+                    break
 
-    else:  #LandUseFlag = 1
+    else:  # LandUseFlag = 1
        #FIND USGS LANDUSE (LULC) FILE
         Flag = 0
         if 24 <= Latitude and Latitude <= 50 and -126 <= Longitude and Longitude <= -66:
@@ -213,12 +213,10 @@ def AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFile
         UsgsMax = 510
         UsgsFile = "LandUse"
 
-        #InputFile = "C:\\Users\\Jeffrey\\Desktop\\Summer 2021\\Terrain\\LandUse\\Data\\USGSindx.csv"
         df = pd.read_csv(USGSindxFilePath)
         UsgsIndex = df.iloc[:,1].tolist()
         
         # usgs lat is the first column and the usgs lon are the other columns
-        #InputFile = "C:\\Users\\Jeffrey\\Desktop\\Summer 2021\\Terrain\\LandUse\\Data\\USGS250k.csv"
         df = pd.read_csv(USGS250kFilePath, header=None)
 
         UsgsLat = df.iloc[:,0].tolist()[1:]
@@ -334,6 +332,23 @@ def AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFile
             else:
                 NewGlobalFile[0] = "LandUse\\" + UsgsIndex[T2] + "\\land_use.gz"
                 NewGlobalFile[1] = ""
+
+        # finishing AddGlobalFile scope
+        for T1 in range(1, 3):
+            if NewGlobalFile != "":
+                for T in range(1, MaxGlobal):
+                    if GlobalLandUse == "":
+                        # do 1080
+                        GlobalLandUse[T] = NewGlobalFile[T1]
+                        NumLandUseFiles = T
+                        break
+                    if GlobalLandUse == NewGlobalFile[T1]:
+                        # do 1090
+                        if NumLandUseFiles > (MaxGlobal - 1):
+                            print("Number of LULC files meets or exceeds MaxGlobal limit")
+                            print("Program terminated")
+                            sys.exit()
+                        break
 
     
 def FindNed30m(Latitude, Longitude):
@@ -890,11 +905,11 @@ def distance_between_a_and_b(LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB):
     Zkm = 111.1 * ZSHORT #DISTANCE IN KILOMETERS
     Zmiles = 69.06 * ZSHORT #DISTANCE IN MILES
 
-    return Zmiles
+    return Zmiles, Zkm
 
 def InitSubRoutine(ExampleS2AFolderPath):
     CriteriaFilePath = ExampleS2AFolderPath + "/Criteria.ini"
-    criteria_df = pd.read_csv()
+    criteria_df = pd.read_csv(CriteriaFilePath)
 
     TheDataFile = criteria_df.iloc[0,0]
     TowerHt = criteria_df.iloc[1,0]
@@ -903,6 +918,20 @@ def InitSubRoutine(ExampleS2AFolderPath):
     BuildingHt = criteria_df.iloc[4,0]
     TreeHt = criteria_df.iloc[5,0]
     OpFreq1 = criteria_df.iloc[7,1]
+    MaxDist2 = criteria_df.iloc[8,0]
+    OpFreq2 = criteria_df.iloc[8,1]
+    MaxDist3 = criteria_df.iloc[9,0]
+    OpFreq3 = criteria_df.iloc[9,1]
+    MaxDist4 = criteria_df.iloc[10,0]
+    OpFreq4 = criteria_df.iloc[10,1]
+    FirstFresnelFraction = criteria_df.iloc[11,0]
+    SecondFresnelFraction = criteria_df.iloc[12,0]
+    SecondKFactor = criteria_df.iloc[13,0]
+    DLaneTest = criteria_df.iloc[14,0]
+    AddlClearance = criteria_df.iloc[15,0]
+    ITURkFactor = criteria_df.iloc[16,0]
+    ALUkFactor = criteria_df.iloc[17,0]
+    
     
 
 ################################################# PyQT GUI Class ###################################################
@@ -926,8 +955,8 @@ class App(QWidget):
 ################################################# End PyQT GUI Class ###################################################
 
 # Global Variables
-NewGlobalFile = [None] * 201
-GlobalTerrain = [None] * 201
+NewGlobalFile = [""] * 201 # bug fix
+GlobalTerrain = [""] * 201
 GlobalLandUse = [None] * 201
 UsgsIndex = [None] * 510
 UsgsLat = [None] * 27
@@ -935,7 +964,6 @@ UsgsLong = [None] * 31
 LulcLat = [[None]* 20 for i in range(2)] 
 LulcLong = [[None]* 20 for i in range(2)] 
 Usgs = [[None]* 26 for i in range(31)] 
-#define lulc array here
 Srtm = [[None]* 5 for i in range(15)]
 Gtopo30 = [[None]* 2 for i in range(2)] 
 LandUseFlag = 0
@@ -945,17 +973,24 @@ Samples = 50
 MaxGlobal = 101
 T1, T2 = None, None
 
-
 # Create PyQT Object
 app = QApplication(sys.argv)
 ex = App()
 
-# open main folder
+# Get ExampleS2A folder path from user's machine
 ExampleS2AFolderPath = ex.openFolderNameDialog("Find ExampleS2A Folder")
 
+# Get Terrain folder path from user's machine
 TerrainFolderPath = ex.openFolderNameDialog("Find Terrain Folder")
 
+# Use Terrain folder path to create USGSindx.csv file path
+USGSindxFilePath = TerrainFolderPath + "/LandUse/Data/USGSindx.csv"
 
+# Use Terrain folder path to create USGS250k.csv file path
+USGS250kFilePath = TerrainFolderPath + "/LandUse/Data/USGS250k.csv"
+
+# Use Terrain folder path to create LandUseDir folder path
+LandUseDir = TerrainFolderPath
 
 print()
 print("TERRAIN DATABASE OPTIONS:")
@@ -971,7 +1006,7 @@ print("   7   CANADA CDED 1: 50,000 SCALE TERRAIN DATA FILES (10 - 20 METER)")
 print("   8   CANADA CDED 1:250,000 SCALE TERRAIN DATA FILES (30 - 90 METER)")
 print()
 
-TheMainOption = input("Input Terrain Database Option (1 to 8): ")
+TheMainOption = int(input("Input Terrain Database Option (1 to 8): "))
 
 TheOption = 0
 
@@ -1044,7 +1079,30 @@ print()
 print("Reading <Criteria.ini> initialization file.")
 print()
 
-# GOSUB 9000 ( call 9000 here )
+# 9000 Initialization subroutine, inserted here instead of calling the function
+CriteriaFilePath = ExampleS2AFolderPath + "/Criteria.csv"
+criteria_df = pd.read_csv(CriteriaFilePath, header=None)
+
+TheDataFile = criteria_df.iloc[0,0]
+TowerHt = criteria_df.iloc[1,0]
+MilesKm = criteria_df.iloc[2,0]
+FeetMeters = criteria_df.iloc[3,0]
+BuildingHt = criteria_df.iloc[4,0]
+TreeHt = criteria_df.iloc[5,0]
+OpFreq1 = criteria_df.iloc[7,1]
+MaxDist2 = criteria_df.iloc[8,0]
+OpFreq2 = criteria_df.iloc[8,1]
+MaxDist3 = criteria_df.iloc[9,0]
+OpFreq3 = criteria_df.iloc[9,1]
+MaxDist4 = criteria_df.iloc[10,0]
+OpFreq4 = criteria_df.iloc[10,1]
+FirstFresnelFraction = criteria_df.iloc[11,0]
+SecondFresnelFraction = criteria_df.iloc[12,0]
+SecondKFactor = criteria_df.iloc[13,0]
+DLaneTest = criteria_df.iloc[14,0]
+AddlClearance = criteria_df.iloc[15,0]
+ITURkFactor = criteria_df.iloc[16,0]
+ALUkFactor = criteria_df.iloc[17,0]
 
 if FeetMeters == "f":   # defined in 9000?
     FeetMeters = "F"
@@ -1064,7 +1122,7 @@ if TowerHt == "Y" or TowerHt == "y":     # defined in 9000?
 print()
 
 # Add path index to input file
-TheDataFilePath = ExampleS2AFolderPath + TheDataFile + ".csv" # TheDataFile comes from 9000
+TheDataFilePath = ExampleS2AFolderPath + "/" + TheDataFile + ".csv" # TheDataFile comes from 9000
 print("Input File: " + TheDataFilePath)
 data_df = pd.read_csv(TheDataFilePath)      # data_df == #10 in the basic module
 
@@ -1076,8 +1134,7 @@ temp1_df = open(TempFilePath, "w")          # temp1_df == #11 in the basic modul
 headers = list(data_df.columns) 
 
 HEADER1 = headers[0]
-#if HEADER1 == "Index":  # if this condition is met, skip 150 and go to 200
-    #temp1_df.close()
+
 if HEADER1 != "Index":      # if HEADER1 == "Index" then skip 150 and go to 200
     if HEADER1 != "Site1":
         print("File does not match required file format.")
@@ -1117,7 +1174,7 @@ if HEADER1 != "Index":      # if HEADER1 == "Index" then skip 150 and go to 200
                 Latitude2 = row[4]
                 Longitude2 = row[5]
 
-                temp1_df.write(PathIndex + "," + Site1 + "," + Latitude1 + "," + Longitude1 + "," + Site2 + "," + Latitude2 + "," + Longitude2)
+                temp1_df.write(str(PathIndex) + "," + str(Site1) + "," + str(Latitude1) + "," + str(Longitude1) + "," + str(Site2) + "," + str(Latitude2) + "," + str(Longitude2))
                 
             if TowerData == 1:
                 PathIndex = COUNTER
@@ -1130,7 +1187,7 @@ if HEADER1 != "Index":      # if HEADER1 == "Index" then skip 150 and go to 200
                 TwrHt1 = row[6]
                 TwrHt2 = row[7]
 
-                temp1_df.write(PathIndex + "," + Site1 + "," + Latitude1 + "," + Longitude1 + "," + Site2 + "," + Latitude2 + "," + Longitude2 + "," + TwrHt1 + "," + TwrHt2)
+                temp1_df.write(str(PathIndex) + "," + str(Site1) + "," + str(Latitude1) + "," + str(Longitude1) + "," + str(Site2) + "," + str(Latitude2) + "," + str(Longitude2) + "," + str(TwrHt1) + "," + str(TwrHt2))
             
         # END LOOP SCOPE
 
@@ -1154,7 +1211,7 @@ if HEADER1 != "Index":      # if HEADER1 == "Index" then skip 150 and go to 200
                 Latitude2 = row[5]
                 Longitude2 = row[6]
 
-                data_df.write(PathIndex + "," + Site1 + "," + Latitude1 + "," + Longitude1 + "," + Site2 + "," + Latitude2 + "," + Longitude2)
+                data_df.write(str(PathIndex) + "," + str(Site1) + "," + str(Latitude1) + "," + str(Longitude1) + "," + str(Site2) + "," + str(Latitude2) + "," + str(Longitude2) + "\n")
 
             if TowerData == 1:
                 PathIndex = row[0]
@@ -1167,7 +1224,7 @@ if HEADER1 != "Index":      # if HEADER1 == "Index" then skip 150 and go to 200
                 TwrHt1 = row[7]
                 TwrHt2 = row[8]
 
-                data_df.write(PathIndex + "," + Site1 + "," + Latitude1 + "," + Longitude1 + "," + Site2 + "," + Latitude2 + "," + Longitude2 + "," + TwrHt1 + "," + TwrHt2)
+                data_df.write(str(PathIndex) + "," + str(Site1) + "," + str(Latitude1) + "," + str(Longitude1) + "," + str(Site2) + "," + str(Latitude2) + "," + str(Longitude2) + "," + str(TwrHt1) + "," + str(TwrHt2) + "\n")
 
             data_df.close()
 
@@ -1244,8 +1301,7 @@ for index, row in data_df.iterrows():
         TwrHt2 = row[8]
 
     # Line 246
-    # save return value here
-    distance_between_a_and_b(Latitude1, Latitude2, Longitude1, Longitude2)
+    Zmiles, Zkm = distance_between_a_and_b(Latitude1, Latitude2, Longitude1, Longitude2)
 
     LAT1 = Latitude1
     LONG1 = Longitude1
@@ -1259,13 +1315,13 @@ for index, row in data_df.iterrows():
     NewGlobalFile[1] = ""
 
 	#GOSUB 1000
-    findMaps(Latitude1, Latitude2, Longitude1, Longitude2, USGSindxFilePath, USGS250kFilePath)
+    findMaps(Latitude1, Latitude2, Longitude1, Longitude2, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
 
 
     if COUNTER == 1:
-        for i in range(1, MaxGlobal):       # not sure where this is defined
-            #if GlobalTerrain(i) != "":
-                #DataFile = TerrainDir + GlobalTerrain(i)   #(i) supposed to be an array?
+        for i in range(1, MaxGlobal):       
+            if GlobalTerrain[i] != "":
+                DataFile = TerrainFolderPath + str(GlobalTerrain[i])   
                 gm_script.write("IMPORT TYPE=AUTO FILENAME=" + chr(34) + DataFile + chr(34))
 
         OldNumTerrainFiles = NumTerrainFiles
@@ -1273,7 +1329,7 @@ for index, row in data_df.iterrows():
     if COUNTER > 1 and NumTerrainFiles > OldNumTerrainFiles:
         for T in range(OldNumTerrainFiles + 1, MaxGlobal):
             if GlobalTerrain[T] != "":
-                DataFile = TerrainDir + GlobalTerrain[T]
+                DataFile = TerrainFolderPath + GlobalTerrain[T]
                 gm_script.write("IMPORT TYPE=AUTO FILENAME=" + chr(34) + DataFile + chr(34))
         OldNumTerrainFiles = NumTerrainFiles
 
@@ -1281,14 +1337,16 @@ for index, row in data_df.iterrows():
     if LandUse == "Y":
 
         LandUseFlag = 1
-        NewGlobalFile(1) = ""
-        NewGlobalFile(2) = ""
-        # call 1000 here        #GOSUB 1000
+        NewGlobalFile[1] = ""
+        NewGlobalFile[2] = ""
+
+        #GOSUB 1000
+        findMaps(Latitude1, Latitude2, Longitude1, Longitude2, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles) # added later, verify signature
 
         if COUNTER == 1:
             for T in range(1, MaxGlobal):
                 if GlobalLandUse[T] != "":
-                    DataFile = LandUseDir + GlobalLandUse[T]
+                    DataFile = LandUseDir + str(GlobalLandUse[T])
                     gm_script.write("IMPORT TYPE=LULC FILENAME=" + chr(34) + DataFile + chr(34))
             OldNumLandUseFiles = NumLandUseFiles
 
@@ -1301,7 +1359,7 @@ for index, row in data_df.iterrows():
 
     if RetainIndex == "Y":        #THEN GOTO 300
         #300 
-        ProfileNumber = PathIndex
+        ProfileNumber = str(PathIndex)
         if PathIndex < 100000:
             ProfileNumber = "0" + ProfileNumber
         if PathIndex < 10000:
@@ -1313,7 +1371,7 @@ for index, row in data_df.iterrows():
         if PathIndex < 10:
             ProfileNumber = "0" + ProfileNumber
     else:
-        ProfileNumber = COUNTER
+        ProfileNumber = str(COUNTER)
         if COUNTER > 999999:
             print("Number paths exceeds 999,999.")
             print("Program terminated.")
@@ -1345,21 +1403,17 @@ for index, row in data_df.iterrows():
     Samples = 1 + int(Samples + .5)   # Point Count
     if Samples < 22:
         Samples = 22
-    DataFile = DataFile + " POINT_COUNT=" + Samples
+    DataFile = DataFile + " POINT_COUNT=" + str(Samples)
     if LandUse == "Y":
         DataFile = DataFile + " ADD_LAND_USE_CODES=YES"
     
-    DataFile = DataFile + " START_POS=" + Longitude1 + "," + Latitude1 + " END_POS=" + Longitude2 + "," + Latitude2
+    DataFile = DataFile + " START_POS=" + str(Longitude1) + "," + str(Latitude1) + " END_POS=" + str(Longitude2) + "," + str(Latitude2)
     gm_script.write(DataFile)
 
-    # LOOP
-
 # Record number of profiles line 356
-
 # this part is commented out in the original code
 #ProfilesFilePath = ExampleS2AFolderPath + "/Profiles.csv"
 #profiles_df = open(ProfilesFilePath, "w") 
-
 
 # Print maps
 MapsFilePath = ExampleS2AFolderPath + "/Maps.csv"
@@ -1367,11 +1421,11 @@ maps_df = open(MapsFilePath, "w")   # maps_df == #12 in the basic module
 
 maps_df.write(ProjectionFile + "\n")
 
-#FOR T = 1 TO MaxGlobal
-for T in range(1, MaxGlobal):
-    if GlobalTerrain[T] != "":
-        DataFile = TerrainFolderPath + GlobalTerrain[T]
-        maps_df.write(DataFile)
+print(GlobalTerrain[T])
+for T in range(MaxGlobal):
+    if GlobalTerrain[T] != "": 
+        DataFile = TerrainFolderPath + str(GlobalTerrain[T])
+        maps_df.write(DataFile + "\n")
 
 print()
 print("Program Completed")
