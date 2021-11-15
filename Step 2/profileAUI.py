@@ -6,14 +6,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtNetwork, QtWebEngineWidgets
 class Ui_ProfileA_Window(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        #QtWidgets.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         self.setupUi()
         self.setupEvents()
     
     def setupUi(self):
         self.setWindowTitle("ProfileA_Window")
         self.resize(1110, 791)
-        self.accountFrame = QtWidgets.QFrame(self.)
+        self.accountFrame = QtWidgets.QFrame(self)
         self.accountFrame.setGeometry(QtCore.QRect(0, 0, 231, 791))
         self.accountFrame.setAcceptDrops(False)
         self.accountFrame.setAutoFillBackground(False)
@@ -105,7 +105,7 @@ class Ui_ProfileA_Window(QtWidgets.QMainWindow):
         self.frame_UsrImg.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_UsrImg.setObjectName("frame_UsrImg")
         
-        self.frame_MainBody = QtWidgets.QFrame()
+        self.frame_MainBody = QtWidgets.QFrame(self)
         self.frame_MainBody.setGeometry(QtCore.QRect(-1, -1, 1171, 831))
         self.frame_MainBody.setAutoFillBackground(False)
         self.frame_MainBody.setStyleSheet("background-color:white;")

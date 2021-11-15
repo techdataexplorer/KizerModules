@@ -673,9 +673,9 @@ FolderPath = ex.openFolderNameDialog(
     "Enter name of folder(s) containing the input (e.g., ProfData)")
 
 ProfileA_Window = PyQt5.QtWidgets.QMainWindow()
-ex = Ui_ProfileA_Window(ProfileA_Window)
-ProfileA_Window.show()
-ProfileA_Window.Btn_start.clicked.connect()
+ex = Ui_ProfileA_Window()
+ex.show()
+ex.Btn_start.clicked.connect(runProfileA())
 
 def reportProgress(n):
     ProfileA_Window.progressBar.setProperty("value", n*20)
