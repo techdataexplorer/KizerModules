@@ -132,11 +132,9 @@ def point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,
 
     if Eval == 1: 
         Site1AntennaElevation = float(Site1Elevation) + float(TwrHt1)
-    if Eval == 1: 
         Site2AntennaElevation = float(Site2Elevation) + float(TwrHt2)
     if Eval == 2: 
         Site1AntennaElevation = float(Site1Elevation) + float(AntHt1)
-    if Eval == 2: 
         Site2AntennaElevation = float(Site2Elevation) + float(AntHt2)
 
 
@@ -217,7 +215,6 @@ def point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,
 
     if PathEval == 1: EarthHeight1 = EarthHeight1 + ObstructionHeight
     if PathEval == 2: EarthHeight1 = EarthHeight1 + WorstCaseObst
-
 
     ModifiedPathHeight1 = PathHeight - FirstFresnelTestHeight - float(AddlClearance)
     Clearance1 = ModifiedPathHeight1 - EarthHeight1
@@ -481,6 +478,7 @@ ALUkFactor = ALUkFactor.upper()
 if ALUkFactor == "Y":
     ALUkFactor = 0
     TestValue = math.abs(float(SecondKFactor) - 1)
+    
     if TestValue < .000001: ALUkFactor = 1
     TestValue = math.abs(float(SecondKFactor) - .66666667)
     if TestValue < .000001: ALUkFactor = 2
@@ -542,6 +540,7 @@ if HEADER1 != "Index" or HEADER8 != "TowerHeight1" or HEADER9 != "TowerHeight2":
     sys.exit()
 
 PathCounter = 0
+
 for index, row in data_file_df.iterrows():    # Walk through the path definitions
     PathCounter = PathCounter + 1
 
@@ -621,7 +620,26 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
     WorstCaseDistance2 = 0
     FailFlag = 0
 
+    pcFileLength = len(profile_number_df.index)
+
+
     for i, line in profile_number_df.iterrows():
+
+        if i == 250:
+            print("250")
+        if i == 500:
+            print("500")
+        if i == 1000: 
+            print("1000")
+        if i == 1500: 
+            print("1500")
+        if i == 2000: 
+            print("2000")       
+        if i == 2500: 
+            print("2500")
+        if i == 3000:
+            print("3000")
+
         PointCount = PointCount + 1 
         distance = line[0]
         ELEVATION = line[1]
@@ -999,7 +1017,7 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
         pr_df = open(PRFolderPath, "w")
 
         EVFolderPath = ExampleS2AFolderPath + "/Failed/EV" + str(ProfileNumber) + ".csv"      #13
-        ev_df = open(EVFolderPath, "w")
+        ev_df = open(EVFolderPath, "w")    
 
         PointCount = 0
         ShortestAntHt1 = TwrHt1
@@ -1043,6 +1061,21 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                 PRINTFILE = str(distance) + "," + str(TerrainHeight) + "," + str(EarthHeight1) + "," + str(EarthHeight2) + "," + str(PathHeight) + ","
             PRINTFILE = str(PRINTFILE) + str(ModifiedPathHeight1) + "," + str(ModifiedPathHeight2)
             ev_df.write(PRINTFILE + "\n")
+
+            EVDuplicatePath = ExampleS2AFolderPath + "/Passed/EV" + str(ProfileNumber) + ".csv"      
+            PRDuplicatePath = ExampleS2AFolderPath + "/Passed/PR" + str(ProfileNumber) + ".csv"      
+
+            try:
+                os.remove(EVDuplicatePath)
+            except FileNotFoundError:
+                pass
+
+            try:
+                os.remove(PRDuplicatePath)
+            except FileNotFoundError:
+                pass
+
+
         
         pr_df.close()   #CLOSE #12
         ev_df.close()   #CLOSE #13
@@ -1102,6 +1135,21 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                 PRINTFILE = str(distance) + "," + str(TerrainHeight) + "," + str(EarthHeight1) + "," + str(EarthHeight2) + "," + str(PathHeight) + ","
             PRINTFILE = str(PRINTFILE) + str(ModifiedPathHeight1) + "," + str(ModifiedPathHeight2)
             ev_df.write(PRINTFILE + "\n")
+
+
+            EVDuplicatePath = ExampleS2AFolderPath + "/Failed/EV" + str(ProfileNumber) + ".csv"      
+            PRDuplicatePath = ExampleS2AFolderPath + "/Failed/PR" + str(ProfileNumber) + ".csv"      
+    
+            try:
+                os.remove(EVDuplicatePath)
+            except FileNotFoundError:
+                pass
+
+            try:
+                os.remove(PRDuplicatePath)
+            except FileNotFoundError:
+                pass
+
    
         pr_df.close()   #CLOSE #12
         ev_df.close()   #CLOSE #13
