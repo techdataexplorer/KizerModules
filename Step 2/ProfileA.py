@@ -1,6 +1,6 @@
 import os
 import sys
-from profileAUI import Ui_ProfileA_Window, QGoogleMap
+from ProfileAUI import Ui_ProfileA_Window, QGoogleMap
 import PyQt5
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import pandas as pd
@@ -94,6 +94,7 @@ class Worker(QObject):
             self.progress.emit(4)
             
         self.finished.emit()
+
 
 
     def initializeSubroutine(self, Criteria):  # 9000
@@ -674,8 +675,6 @@ FolderPath = ex.openFolderNameDialog(
 
 ProfileA_Window = PyQt5.QtWidgets.QMainWindow()
 ex = Ui_ProfileA_Window()
-ex.show()
-ex.Btn_start.clicked.connect(runProfileA())
 
 def reportProgress(n):
     ProfileA_Window.progressBar.setProperty("value", n*20)
@@ -697,6 +696,8 @@ def runProfileA():
     
     thread.start()
     
-    
 
-endProgram()
+ex.show()
+ex.Btn_start.clicked.connect(runProfileA)
+    
+sys.exit(ProfileA_Window.exec_())
