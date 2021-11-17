@@ -194,10 +194,12 @@ def point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,
 
     # Alternate Test 2 Earth Bulge = 150 feet plus grazing (0 F1) at k = 1
     if DLaneTest == "Y":
-        if FeetMeters == "F": EarthBulge2 = (PathDistanceA * PathDistanceB) / (1.5 * 1)   # miles
-        if FeetMeters == "M": EarthBulge2 = (PathDistanceA * PathDistanceB) / (12.75 * 1)  # kilometers
-        if FeetMeters == "F": EarthBulge2 = EarthBulge2 + 150
-        if FeetMeters == "M": EarthBulge2 = EarthBulge2 + (150 * .3048)
+        if FeetMeters == "F": 
+            EarthBulge2 = (PathDistanceA * PathDistanceB) / (1.5 * 1)   # miles
+            EarthBulge2 = EarthBulge2 + 150
+        if FeetMeters == "M": 
+            EarthBulge2 = (PathDistanceA * PathDistanceB) / (12.75 * 1)  # kilometers
+            EarthBulge2 = EarthBulge2 + (150 * .3048)
     
 
     if FeetMeters == "F": FirstFresnelZone = 72.1 * math.sqrt((PathDistanceA * PathDistanceB) / (OpFreq * Site2Distance))
@@ -213,22 +215,22 @@ def point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,
     # Test 1
     EarthHeight1 = ELEVATION + EarthBulge1
 
-    if PathEval == 1: EarthHeight1 = EarthHeight1 + ObstructionHeight
-    if PathEval == 2: EarthHeight1 = EarthHeight1 + WorstCaseObst
+    if int(PathEval) == 1: EarthHeight1 = float(EarthHeight1) + float(ObstructionHeight)
+    if int(PathEval) == 2: EarthHeight1 = float(EarthHeight1) + float(WorstCaseObst)
 
     ModifiedPathHeight1 = PathHeight - FirstFresnelTestHeight - float(AddlClearance)
     Clearance1 = ModifiedPathHeight1 - EarthHeight1
 
-    if Clearance1 < 0: FailFlag = 1
+    if Clearance1 < -1: FailFlag = 1
 
     if Test2Flag == 1:
         # Test 2
-        EarthHeight2 = ELEVATION + EarthBulge2
-        if PathEval == 1: EarthHeight2 = EarthHeight2 + ObstructionHeight
-        if PathEval == 2: EarthHeight2 = EarthHeight2 + WorstCaseObst
+        EarthHeight2 = float(ELEVATION) + float(EarthBulge2)
+        if int(PathEval) == 1: EarthHeight2 = float(EarthHeight2) + float(ObstructionHeight)
+        if int(PathEval) == 2: EarthHeight2 = float(EarthHeight2) + float(WorstCaseObst)
         ModifiedPathHeight2 = float(PathHeight) - float(SecondFresnelTestHeight) - float(AddlClearance)
         Clearance2 = ModifiedPathHeight2 - EarthHeight2
-        if Clearance2 < 0: FailFlag = 1
+        if Clearance2 < -1: FailFlag = 1
     
 
     return Clearance1, Clearance2, EarthHeight1, EarthHeight2, PathHeight, ModifiedPathHeight1, ModifiedPathHeight2, FirstFresnelTestHeight, SecondFresnelTestHeight, SecondKFactorMod, FailFlag, FirstFresnelZone   # add return values
@@ -236,35 +238,32 @@ def point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,
 #-------------------------------------------------------------------------- Line 1460
 # 8000  'Optimize just one tower
 
-def optimize_one_tower():
+def optimize_one_tower(ShortestWGrun):
 
     if TwrHtFlag == 0:
         IISTART = START1
         IIEND = END1
     
-
     if TwrHtFlag == 1:
         IISTART = START2
         IIEND = END2
     
-
     #FOR II = IISTART TO IIEND
-    for II in range(IISTART, IIEND):
+    int_IIEND = int(IIEND)
+    for II in range(IISTART, int_IIEND):
         if TwrHtFlag == 0:
             AntHt1 = IIEND - II + IISTART
             if FeetMeters == "M": AntHt1 = AntHt1 / 4
             AntHt2 = TwrHt2
         
-
         if TwrHtFlag == 1:
             AntHt2 = IIEND - II + IISTART
             if FeetMeters == "M": AntHt2 = AntHt2 / 4
             AntHt1 = TwrHt1
         
-
         #OPEN SysDataDrive$ + ":\" + Folder$ + "\TempFile\PC" + ProfileNumber$ + ".csv" FOR INPUT AS #11
         ProfileNumberFilePath = ExampleS2AFolderPath + "/TempFile/PC" + str(ProfileNumber) + ".csv"
-        profile_num_df = pd.read_csv(ProfileNumberFilePath, headers=None)       #11
+        profile_num_df = pd.read_csv(ProfileNumberFilePath, header=None)       #11
 
         PointCount = 0
         FailFlag = 0
@@ -309,7 +308,6 @@ def optimize_one_tower():
         print("Path " + str(ProfileNumber) + " optimization =  " + str(PerCent) + "%, (AntHt1 = " + str(AntHt1) + ", AntHt2 = " + str(AntHt2) + "," + str(Info) + ")")
 
         if FailFlag == 1: break     # GOTO 8500
-
 
     return     
 
@@ -382,7 +380,7 @@ SecondFresnelFraction = float(Answers[15])
 SecondKFactor = float(Answers[16])
 
 DLaneTest = Answers[17]
-if DLaneTest == '': DLaneTest = 0 
+if DLaneTest == '': DLaneTest = "N" 
 AddlClearance = Answers[18]
 if AddlClearance == '': AddlClearance = 0 
 
@@ -434,7 +432,6 @@ if PathEval == 1:
     print("\nPath profile obstructions with assumed heights will be used for evaluations.\n")
 if PathEval == 2:
     print("\nAssumed tree (or building worst case) height will be used for evaluations.\n")
-
 
 if DLaneTest != "N":
     DLaneTest = "Y"
@@ -625,21 +622,6 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
 
     for i, line in profile_number_df.iterrows():
 
-        if i == 250:
-            print("250")
-        if i == 500:
-            print("500")
-        if i == 1000: 
-            print("1000")
-        if i == 1500: 
-            print("1500")
-        if i == 2000: 
-            print("2000")       
-        if i == 2500: 
-            print("2500")
-        if i == 3000:
-            print("3000")
-
         PointCount = PointCount + 1 
         distance = line[0]
         ELEVATION = line[1]
@@ -660,6 +642,7 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
         if Test2Flag == 1 and Clearance2 < WorstCaseClearance2:
             WorstCaseClearance2 = Clearance2
             WorstCaseDistance2 = distance
+
 
     if float(WorstCaseClearance1) >= 0:
         WorstCaseClearance1 = str(float(WorstCaseClearance1 + .5))
@@ -818,13 +801,13 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                     if Site1Flag == 1:
                         ShortestAntHt1 = str(TwrHt1)
                         TwrHtFlag = 1  # Optimize AntHt2#
-                        optimize_one_tower()
+                        optimize_one_tower(ShortestWGrun)
                         break     # GOTO 530
 
                     if Site2Flag == 1:
                         ShortestAntHt2 = str(TwrHt2)
                         TwrHtFlag = 0  # Optimize AntHt1#
-                        optimize_one_tower()
+                        optimize_one_tower(ShortestWGrun)
                         break   #GOTO 530
 
                 TwrHtFlag = 0
@@ -842,8 +825,11 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                     JJSTART = START1
                     JJEND = END1
 
-                for II in range(IISTART, IIEND):
-                    for JJ in range(JJSTART, JJEND, 10):
+                int_IIEND = int(IIEND)
+                int_JJEND = int(JJEND)
+
+                for II in range(IISTART, int_IIEND):
+                    for JJ in range(JJSTART, int_JJEND, 10):
                         if TwrHtFlag == 0:
                             AntHt1 = IIEND - II + IISTART
                             if FeetMeters == "M": AntHt1 = AntHt1 / 4
@@ -879,9 +865,9 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                             Clearance1, Clearance2, EarthHeight1, EarthHeight2, PathHeight, ModifiedPathHeight1, ModifiedPathHeight2, FirstFresnelTestHeight, SecondFresnelTestHeight, SecondKFactorMod, FailFlag, FirstFresnelZone  = point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,ITURkFactor,SecondKFactor,Test2Flag)
 
                         if FailFlag == 0: NewStart = JJ
-                        if FailFlag == 1: break      # abandon current JJ loop and execute 510 restart code only if FailFlag = 1 (possible logic error here)
+                        if FailFlag == 1: break      # abandon current JJ loop and execute 510 restart code only if FailFlag = 1
                     
-                    for JJ in range(NewStart, JJEND):
+                    for JJ in range(NewStart, int_JJEND):
                         if TwrHtFlag == 0:
                             AntHt1 = IIEND - II + IISTART
                             if FeetMeters == "M": AntHt1 = AntHt1 / 4
@@ -904,7 +890,7 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                         if FailFlag == 0: Info = "Path Clear"
                         if FailFlag == 1: Info = "Path Obstructed"
 
-                        print("Path " + str(ProfileNumber) + " optimization =  " + str(PerCent) + "%, (AntHt1 = " + str(AntHt1) + ", AntHt2 = " + str(AntHt2) + "," + str(Info) + ")")
+                        print("Path " + str(ProfileNumber) + " optimization = " + str(PerCent) + "%, (AntHt1 = " + str(AntHt1) + ", AntHt2 = " + str(AntHt2) + ", " + str(Info) + ")")
 
                         PCProfileFolderPath = ExampleS2AFolderPath + "/TempFile/PC" + str(ProfileNumber) + ".csv"   #11
                         pc_profile_df = pd.read_csv(PCProfileFolderPath, header=None)
@@ -929,11 +915,11 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                             Clearance1, Clearance2, EarthHeight1, EarthHeight2, PathHeight, ModifiedPathHeight1, ModifiedPathHeight2, FirstFresnelTestHeight, SecondFresnelTestHeight, SecondKFactorMod, FailFlag, FirstFresnelZone  = point_on_path(distance, ELEVATION, ObstructionHeight,FailFlag,AddlClearance,ITURkFactor,SecondKFactor,Test2Flag)
                         
                         if FailFlag == 0:
-                            WGrun = AntHt1 + AntHt2
+                            WGrun = float(AntHt1) + float(AntHt2)
                             if WGrun < ShortestWGrun:
                                 ShortestWGrun = WGrun
-                                ShortestAntHt1 = AntHt1
-                                ShortestAntHt2 = AntHt2
+                                ShortestAntHt1 = float(AntHt1)
+                                ShortestAntHt2 = float(AntHt2)
                                 ShortestAntHt1 = float((ShortestAntHt1 * 100) + .5)
                                 ShortestAntHt1 = ShortestAntHt1 / 100
                                 ShortestAntHt1 = str(ShortestAntHt1)
@@ -945,9 +931,8 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
 
                 break   # break point where Goto 530 statments start
 
-            # start 530 code from line 547 here
             #530 'Create the optimized link profile and link evaluation files
-            # still within scope of if (failflag == 0) on ~ line 450 of this file
+            # still within scope of if (failflag == 0)
             PCFolderPath = ExampleS2AFolderPath + "/TempFile/PC" + str(ProfileNumber) + ".csv"      #11
             pc_df = pd.read_csv(PCFolderPath, header=None)
 
@@ -1002,7 +987,6 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
             
         
         break
-    # start 500 code from line 604 here   
     # 500   'Work on non-optimized paths
     FailFlag = HoldFlag
     if FailFlag == 1:
@@ -1074,8 +1058,6 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
                 os.remove(PRDuplicatePath)
             except FileNotFoundError:
                 pass
-
-
         
         pr_df.close()   #CLOSE #12
         ev_df.close()   #CLOSE #13
@@ -1150,7 +1132,6 @@ for index, row in data_file_df.iterrows():    # Walk through the path definition
             except FileNotFoundError:
                 pass
 
-   
         pr_df.close()   #CLOSE #12
         ev_df.close()   #CLOSE #13
 
@@ -1165,7 +1146,6 @@ status_df.close()
 
 pass_path_df.flush()
 pass_path_df.close()
-
 
 # Eliminate duplicates from passed sites list
 print("     Eliminating duplicates from passed sites list")
@@ -1221,7 +1201,6 @@ print("     Eliminating duplicates from failed sites list")
 fail_site_df.flush()
 fail_site_df.close()   
 
-#change /Passed/ to /Failed/
 FailSiteFilePath2 = ExampleS2AFolderPath + "/Failed/FailSite.csv"
 failed_site_df = pd.read_csv(FailSiteFilePath2, header=None)       #56
 
@@ -1255,20 +1234,18 @@ for i, row in temp1_df.iterrows():
         if SITE1 == SiteA: 
             Flag = 1
 
-
     if Flag == 0:
         failed_site_df = open(FailSiteFilePath2, "a")       #57
         failed_site_df.write(str(SITE1) + "," + str(Latitude1) + "," + str(Longitude1) + "\n")
         failed_site_df.flush()
         failed_site_df.close()  # CLOSE #57
 
-# Create the MapInfo, Google Earth and DeLorme mapping files '+++++++++++++++++++++++++++++
+# Create the Google Earth/KML mapping files '+++++++++++++++++++++++++++++
 os.system('cls' if os.name == 'nt' else 'clear')
 # Passed sites and paths
 InputFileSites = ExampleS2AFolderPath + "/Passed/PassSite.csv"
 InputFilePaths = ExampleS2AFolderPath + "/Passed/PassPath.csv"
 OutputFileGoogle = ExampleS2AFolderPath + "/Passed/Google/GEPaths.KML"
-
 # Create Maps
 createKML(InputFileSites, InputFilePaths, OutputFileGoogle)
 
@@ -1276,7 +1253,6 @@ createKML(InputFileSites, InputFilePaths, OutputFileGoogle)
 InputFileSites = ExampleS2AFolderPath + "/Failed/FailSite.csv"
 InputFilePaths = ExampleS2AFolderPath + "/Failed/FailPath.csv"
 OutputFileGoogle = ExampleS2AFolderPath + "/Failed/Google/GEPaths.KML"
-
 # Create Maps
 createKML(InputFileSites, InputFilePaths, OutputFileGoogle)
 
