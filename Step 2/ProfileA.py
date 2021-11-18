@@ -1,6 +1,6 @@
 import os
 import sys
-from ProfileAUI import Ui_ProfileA_Window, QGoogleMap
+from profileAUI import Ui_ProfileA_Window, QGoogleMap
 import PyQt5
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import pandas as pd
@@ -11,17 +11,16 @@ import time
 # TODO investigate the origins and meanings of set values
 
 class Worker(QObject):
-    
+
     def __init__(self, FolderPath):
         super().__init__()
         self.FolderPath = FolderPath
-    
+
     finished = pyqtSignal()
     progress = pyqtSignal(int)
-    
+
     def run(self):
         print("Reading <Criteria.ini> initialization file.\n")
-
 
         Criteria = (self.FolderPath + "\Criteria.ini")
 
@@ -61,7 +60,6 @@ class Worker(QObject):
 
             counter += 1
 
-
         if(SysOpt == "Y"):
             print("\nCreating Optimized path profiles\n")
 
@@ -69,7 +67,7 @@ class Worker(QObject):
             OutFolder = FolderPath + "\ProfOpt"
             InputFolder = InFolder + "\PATHINFO.CSV"
             self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-            
+
             self.progress.emit(2)
 
         if(SysFail == "Y"):
@@ -90,12 +88,10 @@ class Worker(QObject):
             OutFolder = FolderPath + "\ProfPass"
             InputFolder = InFolder + "\PATHINFO.CSV"
             self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-            
+
             self.progress.emit(4)
-            
+
         self.finished.emit()
-
-
 
     def initializeSubroutine(self, Criteria):  # 9000
 
@@ -174,10 +170,10 @@ class Worker(QObject):
                 OutFolder + "\Plotter\\" + "pgnuplot.exe SC" + str(ProfileNumber) + ".gp\n")
 
             Flag2 = self.createScripts(InFolder, OutFolder, ProfileNumber, CleanUpScriptFile, TowerHeight1,
-                                TowerHeight2, AntennaHeight1, AntennaHeight2, PathDistance, Site1, Site2, FeetMeters)  # Create scripts
+                                       TowerHeight2, AntennaHeight1, AntennaHeight2, PathDistance, Site1, Site2, FeetMeters)  # Create scripts
 
             self.createDataFiles(InFolder, OutFolder, ProfileNumber,
-                            CleanUpScriptFile, Flag2, AntennaHeight1)  # Create data files
+                                 CleanUpScriptFile, Flag2, AntennaHeight1)  # Create data files
 
         return
 
@@ -304,7 +300,8 @@ class Worker(QObject):
         MainScriptFile.write("set encoding iso_8859_1\n")
         MainScriptFile.write("set term png\n")
         MainScriptFile.write("set nokey\n")
-        MainScriptFile.write("set title 'Path Profile {}'\n".format(ProfileNumber))
+        MainScriptFile.write(
+            "set title 'Path Profile {}'\n".format(ProfileNumber))
 
         LenS1 = len(Site1)
         LenS2 = len(Site2)
@@ -380,7 +377,7 @@ class Worker(QObject):
                 Elev2 = str(Elev2)
 
                 MainScriptFile.write("set arrow nohead from " + str(Dist2) +
-                                    "," + str(Elev) + " to " + str(Dist2) + "," + Elev2 + "\n")
+                                     "," + str(Elev) + " to " + str(Dist2) + "," + Elev2 + "\n")
                 continue
 
             if(ObCode == "B"):
@@ -414,13 +411,13 @@ class Worker(QObject):
                 Ht2Up = str(Ht2Up)
 
                 MainScriptFile.write("set arrow nohead from " + str(Dist2) +
-                                    "," + Ht0Down + " to " + str(Dist2) + "," + Ht0Up + "\n")
+                                     "," + Ht0Down + " to " + str(Dist2) + "," + Ht0Up + "\n")
                 MainScriptFile.write("set arrow nohead from " + str(Dist2) +
-                                    "," + Ht1Down + " to " + str(Dist2) + "," + Ht1Up + "\n")
+                                     "," + Ht1Down + " to " + str(Dist2) + "," + Ht1Up + "\n")
 
                 if(Flag2 == 1):
                     MainScriptFile.write("set arrow nohead from " + str(Dist2) +
-                                        "," + Ht2Down + " to " + str(Dist2) + "," + Ht2Up + "\n")
+                                         "," + Ht2Down + " to " + str(Dist2) + "," + Ht2Up + "\n")
 
             if(ObCode == "T"):
                 Delta1 = float(T1) - float(T0)
@@ -454,20 +451,20 @@ class Worker(QObject):
                 Ht2Up = str(Ht2Up)
 
                 MainScriptFile.write("set arrow head from " + str(Dist2) +
-                                    "," + Ht0Down + " to " + str(Dist2) + "," + Ht0Up + "\n")
+                                     "," + Ht0Down + " to " + str(Dist2) + "," + Ht0Up + "\n")
                 MainScriptFile.write("set arrow head from " + str(Dist2) +
-                                    "," + Ht1Down + " to " + str(Dist2) + "," + Ht1Up + "\n")
+                                     "," + Ht1Down + " to " + str(Dist2) + "," + Ht1Up + "\n")
 
                 if(Flag2 == 1):
                     MainScriptFile.write("set arrow head from " + str(Dist2) +
-                                        "," + Ht2Down + " to " + str(Dist2) + "," + Ht2Up + "\n")
+                                         "," + Ht2Down + " to " + str(Dist2) + "," + Ht2Up + "\n")
 
         del ev_df
         del pr_df
         Elev2 = float(Elev) + float(TowerHeight2)
         Elev2 = str(Elev2)
         MainScriptFile.write("set arrow nohead from " + str(Dist2) +
-                            "," + Elev + " to " + str(Dist2) + "," + Elev2 + "\n")
+                             "," + Elev + " to " + str(Dist2) + "," + Elev2 + "\n")
 
         #----------------------------------------
 
@@ -475,7 +472,8 @@ class Worker(QObject):
         PrintLine = (PrintLine + "'T0" + ProfileNumber + ".gp' with lines,")
         PrintLine = (PrintLine + "'T1" + ProfileNumber + ".gp' with lines,")
         if(Flag2 == 1):
-            PrintLine = (PrintLine + "'T2" + ProfileNumber + ".gp' with lines,")
+            PrintLine = (PrintLine + "'T2" +
+                         ProfileNumber + ".gp' with lines,")
         PrintLine = (PrintLine + "'P0" + ProfileNumber + ".gp' with lines,")
         PrintLine = (PrintLine + "'P1" + ProfileNumber + ".gp' with lines")
         if(Flag2 == 1):
@@ -652,7 +650,8 @@ class App(PyQt5.QtWidgets.QWidget):
         self.height = 480
 
     def openFolderNameDialog(self, folderPrompt):
-        folderName = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, folderPrompt)
+        folderName = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(
+            self, folderPrompt)
         if folderName:
             folderName = os.path.normpath(folderName)
             return folderName
@@ -673,31 +672,32 @@ print("972.333.0712 / 972.618.2890\n")
 FolderPath = ex.openFolderNameDialog(
     "Enter name of folder(s) containing the input (e.g., ProfData)")
 
-ProfileA_Window = PyQt5.QtWidgets.QMainWindow()
+ProfileA_Window = PyQt5.QtWidgets.QApplication(sys.argv)
 ex = Ui_ProfileA_Window()
+
 
 def reportProgress(n):
     ProfileA_Window.progressBar.setProperty("value", n*20)
 
+
 def runProfileA():
-    
+
     thread = QThread()
-    
-    worker = Worker()
-    
+
+    worker = Worker(FolderPath)
+
     worker.moveToThread(thread)
-    
+
     thread.started.connect(worker.run)
     worker.finished.connect(thread.quit)
     worker.finished.connect(worker.deleteLater)
     thread.finished.connect(thread.deleteLater)
     worker.progress.connect(reportProgress)
-    
-    
+
     thread.start()
-    
+
 
 ex.show()
 ex.Btn_start.clicked.connect(runProfileA)
-    
+
 sys.exit(ProfileA_Window.exec_())
