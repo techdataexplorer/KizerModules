@@ -1,5 +1,6 @@
 import os
 import sys
+from threading import main_thread
 from profileAUI import Ui_ProfileA_Window, QGoogleMap
 import PyQt5
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -10,88 +11,73 @@ import time
 # reads the input file and appends certain lines when the internal variable counter reaches set values.
 # TODO investigate the origins and meanings of set values
 
+# mainObj = None
+
+class Main():
+
+    def __init__(self) -> None:
+        # Create PyQT Object
+        self.app = PyQt5.QtWidgets.QApplication(sys.argv)
+        self.filer = App()
+
+        self.ProfileA_Window = PyQt5.QtWidgets.QApplication(sys.argv)
+        self.ex = Ui_ProfileA_Window()
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        self.ex.label_terminalTxt.setText("Path Profile Plotting Program")
+        self.setTerminalTxt("\n(C) TeleVision, Inc.")
+        self.setTerminalTxt("georgekizer@gmail.com")
+        self.setTerminalTxt("972.333.0712 / 972.618.2890\n")
+
+        self.FolderPath = self.filer.openFolderNameDialog(
+            "Enter name of folder(s) containing the input (e.g., ProfData)")
+
+
+
+
+    def reportProgress(self, n):
+        self.ex.progressBar.setProperty("value", n*20)
+
+    def setTerminalTxt(self, txt):
+        terminalTxt = self.ex.label_terminalTxt.text()
+        terminalTxt = terminalTxt + '\n' + txt
+        self.ex.label_terminalTxt.setText(terminalTxt)
+
+    def runProfileA(self):
+
+        self.thread = QThread()
+        global mainObj
+        self.worker = Worker(self.FolderPath, mainObj)
+
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress.connect(self.reportProgress)
+
+        self.thread.start()
+
+    def finalTask(self):
+        self.ex.show()
+        print("1", mainObj)
+        self.ex.Btn_start.clicked.connect(self.runProfileA)
+        print("2", mainObj)
+
+        sys.exit(self.ProfileA_Window.exec_())
+
 class Worker(QObject):
 
-    def __init__(self, FolderPath):
+    def __init__(self, FolderPath, mainObj):
         super().__init__()
         self.FolderPath = FolderPath
+        self.mainObj1 = mainObj
 
     finished = pyqtSignal()
     progress = pyqtSignal(int)
 
-    def run(self):
-        print("Reading <Criteria.ini> initialization file.\n")
-
-        Criteria = (self.FolderPath + "\Criteria.ini")
-
-        #Initialization subroutine
-        Answers = self.initializeSubroutine(Criteria)  # 9000
-
-        FeetMeters = Answers[3]
-
-        if (FeetMeters == "f"):
-            FeetMeters = "F"
-        elif (FeetMeters == "m"):
-            FeetMeters = "M"
-        if (FeetMeters == "F" or FeetMeters == "M"):
-            pass
-        else:
-            print("Fourth line of <Criteria.ini> not understood.")
-            print("Line should be F or M.")
-            print(" Program; Terminated.")
-            endProgram()  # 9999
-
-        Status = (FolderPath + "\TempFile\Status.CSV")
-        #move file into s2a
-        #open file, read file, close file
-
-        StatusDF = pd.read_csv(Status, header=None)
-        counter = 0
-        for index, row in StatusDF.iterrows():
-
-            Question = row[0]
-            YNAnswer = row[1]
-            if (counter == 0):
-                SysOpt = YNAnswer
-            elif(counter == 1):
-                SysFail = YNAnswer
-            elif(counter == 2):
-                SysPass = YNAnswer
-
-            counter += 1
-
-        if(SysOpt == "Y"):
-            print("\nCreating Optimized path profiles\n")
-
-            InFolder = FolderPath + "\Optimize"
-            OutFolder = FolderPath + "\ProfOpt"
-            InputFolder = InFolder + "\PATHINFO.CSV"
-            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-
-            self.progress.emit(2)
-
-        if(SysFail == "Y"):
-            print("\nCreating Failed path profiles\n")
-
-            InFolder = FolderPath + "\Failed"
-            OutFolder = FolderPath + "\ProfFail"
-            InputFolder = InFolder + "\PATHINFO.CSV"
-
-            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-
-            self.progress.emit(3)
-
-        if(SysPass == "Y"):
-            print("\nCreating Passed path profiles\n")
-
-            InFolder = FolderPath + "\Passed"
-            OutFolder = FolderPath + "\ProfPass"
-            InputFolder = InFolder + "\PATHINFO.CSV"
-            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-
-            self.progress.emit(4)
-
-        self.finished.emit()
 
     def initializeSubroutine(self, Criteria):  # 9000
 
@@ -150,7 +136,7 @@ class Worker(QObject):
             PathDistance = float(row[11])
             OpFrequency = float(row[12])
 
-            print(str(PathIndex) + "   " + Site1 + "   " + Site2)
+            mainObj.setTerminalTxt(str(PathIndex) + "   " + Site1 + "   " + Site2)
             PathNumber = int(PathIndex)
             ProfileNumber = PathNumber
 
@@ -631,11 +617,86 @@ class Worker(QObject):
         return
 
 
-def endProgram():  # 9999
-    print("\nProgram Completed")
-    input("\nPress <Enter> key to clear this window")
-    sys.exit(app.exec_())
+    def endProgram():  # 9999
+        print("here 562")
+        mainObj.setTerminalTxt("\nProgram Completed")
+        input("\nPress <Enter> key to clear this window")
+        sys.exit(mainObj.app.exec_())
 
+
+    def run(self):
+        self.mainObj1.setTerminalTxt("Reading <Criteria.ini> initialization file.\n")
+
+        Criteria = (self.FolderPath + "//Criteria.ini")
+
+        #Initialization subroutine
+        Answers = self.initializeSubroutine(Criteria)  # 9000
+
+        FeetMeters = Answers[3]
+
+        if (FeetMeters == "f"):
+            FeetMeters = "F"
+        elif (FeetMeters == "m"):
+            FeetMeters = "M"
+        if (FeetMeters == "F" or FeetMeters == "M"):
+            pass
+        else:
+            mainObj.setTerminalTxt("Fourth line of <Criteria.ini> not understood.")
+            mainObj.setTerminalTxt("Line should be F or M.")
+            mainObj.setTerminalTxt(" Program; Terminated.")
+            self.endProgram()  # 9999
+
+        Status = (self.FolderPath + "\TempFile\Status.CSV")
+        #move file into s2a
+        #open file, read file, close file
+
+        StatusDF = pd.read_csv(Status, header=None)
+        counter = 0
+        for index, row in StatusDF.iterrows():
+
+            Question = row[0]
+            YNAnswer = row[1]
+            if (counter == 0):
+                SysOpt = YNAnswer
+            elif(counter == 1):
+                SysFail = YNAnswer
+            elif(counter == 2):
+                SysPass = YNAnswer
+
+            counter += 1
+
+        if(SysOpt == "Y"):
+            mainObj.setTerminalTxt("\nCreating Optimized path profiles\n")
+
+            InFolder = self.FoderPath + "\Optimize"
+            OutFolder = self.FoderPath + "\ProfOpt"
+            InputFolder = InFolder + "\PATHINFO.CSV"
+            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
+
+            self.progress.emit(2)
+
+        if(SysFail == "Y"):
+            mainObj.setTerminalTxt("\nCreating Failed path profiles\n")
+
+            InFolder = self.FoderPath + "\Failed"
+            OutFolder = self.FoderPath + "\ProfFail"
+            InputFolder = InFolder + "\PATHINFO.CSV"
+
+            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
+
+            self.progress.emit(3)
+
+        if(SysPass == "Y"):
+            mainObj.setTerminalTxt("\nCreating Passed path profiles\n")
+
+            InFolder = self.FoderPath + "\Passed"
+            OutFolder = self.FoderPath + "\ProfPass"
+            InputFolder = InFolder + "\PATHINFO.CSV"
+            self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
+
+            self.progress.emit(4)
+
+        self.finished.emit()
 
 ################################################# PyQT GUI Class ###################################################
 # Based on code from https://pythonspot.com/pyqt5-file-dialog/
@@ -658,46 +719,12 @@ class App(PyQt5.QtWidgets.QWidget):
 
 
 ################################################# End PyQT GUI Class ###################################################
-# Create PyQT Object
-app = PyQt5.QtWidgets.QApplication(sys.argv)
-ex = App()
-
-os.system('cls' if os.name == 'nt' else 'clear')
-
-print("Path Profile Plotting Program")
-print("\n(C) TeleVision, Inc.")
-print("georgekizer@gmail.com")
-print("972.333.0712 / 972.618.2890\n")
-
-FolderPath = ex.openFolderNameDialog(
-    "Enter name of folder(s) containing the input (e.g., ProfData)")
-
-ProfileA_Window = PyQt5.QtWidgets.QApplication(sys.argv)
-ex = Ui_ProfileA_Window()
 
 
-def reportProgress(n):
-    ProfileA_Window.progressBar.setProperty("value", n*20)
 
 
-def runProfileA():
-
-    thread = QThread()
-
-    worker = Worker(FolderPath)
-
-    worker.moveToThread(thread)
-
-    thread.started.connect(worker.run)
-    worker.finished.connect(thread.quit)
-    worker.finished.connect(worker.deleteLater)
-    thread.finished.connect(thread.deleteLater)
-    worker.progress.connect(reportProgress)
-
-    thread.start()
-
-
-ex.show()
-ex.Btn_start.clicked.connect(runProfileA)
-
-sys.exit(ProfileA_Window.exec_())
+# if __name__ == "__main__":
+print("here 725")
+mainObj = Main()
+mainObj.finalTask()
+print("here 727")
