@@ -23,32 +23,41 @@ class Main():
         self.ProfileA_Window = PyQt5.QtWidgets.QApplication(sys.argv)
         self.ex = Ui_ProfileA_Window()
 
-        os.system('cls' if os.name == 'nt' else 'clear')
-
-        self.ex.label_terminalTxt.setText("Path Profile Plotting Program")
-        self.setTerminalTxt("\n(C) TeleVision, Inc.")
-        self.setTerminalTxt("georgekizer@gmail.com")
-        self.setTerminalTxt("972.333.0712 / 972.618.2890\n")
-
-        self.FolderPath = self.filer.openFolderNameDialog(
-            "Enter name of folder(s) containing the input (e.g., ProfData)")
-
-
-
-
     def reportProgress(self, n):
-        self.ex.progressBar.setProperty("value", n*20)
+        self.ex.progressBar.setProperty("value", n*0.008)
 
     def setTerminalTxt(self, txt):
         terminalTxt = self.ex.label_terminalTxt.text()
         terminalTxt = terminalTxt + '\n' + txt
         self.ex.label_terminalTxt.setText(terminalTxt)
 
+    def readyToReRun(self):
+        self.ex.Btn_start.setEnabled(True)
+        self.ex.Btn_start.setText("Start")
+        self.ex.Btn_start.setStyleSheet("""
+                                        QPushButton
+                                     {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        background-color: rgb(8, 44, 108);
+                                        border: none;
+                                        border-radius: 10px;
+                                     }
+                                     QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";      
+                                        background-color: rgb(72, 128, 225);
+                                        color: rgb(192, 192, 192);
+                                        border: 2px solid rgb(13, 61, 144);
+                                        border-radius: 10px
+                                        }
+                                        """)
+
     def runProfileA(self):
 
         self.thread = QThread()
         global mainObj
-        self.worker = Worker(self.FolderPath, mainObj)
+        self.worker = Worker()
 
         self.worker.moveToThread(self.thread)
 
@@ -59,25 +68,24 @@ class Main():
         self.worker.progress.connect(self.reportProgress)
 
         self.thread.start()
+               
+        self.thread.finished.connect(self.readyToReRun)
 
     def finalTask(self):
         self.ex.show()
-        print("1", mainObj)
         self.ex.Btn_start.clicked.connect(self.runProfileA)
-        print("2", mainObj)
 
         sys.exit(self.ProfileA_Window.exec_())
 
+
 class Worker(QObject):
 
-    def __init__(self, FolderPath, mainObj):
+    def __init__(self):
         super().__init__()
-        self.FolderPath = FolderPath
-        self.mainObj1 = mainObj
 
     finished = pyqtSignal()
-    progress = pyqtSignal(int)
-
+    progress = pyqtSignal(float)
+    progressVal = 0
 
     def initializeSubroutine(self, Criteria):  # 9000
 
@@ -136,7 +144,8 @@ class Worker(QObject):
             PathDistance = float(row[11])
             OpFrequency = float(row[12])
 
-            mainObj.setTerminalTxt(str(PathIndex) + "   " + Site1 + "   " + Site2)
+            mainObj.setTerminalTxt(
+                str(PathIndex) + "   " + Site1 + "   " + Site2)
             PathNumber = int(PathIndex)
             ProfileNumber = PathNumber
 
@@ -155,11 +164,20 @@ class Worker(QObject):
             PrintScriptOutput.write(
                 OutFolder + "\Plotter\\" + "pgnuplot.exe SC" + str(ProfileNumber) + ".gp\n")
 
+            self.progressVal += 0.1
+            self.progress.emit(self.progressVal)
+
             Flag2 = self.createScripts(InFolder, OutFolder, ProfileNumber, CleanUpScriptFile, TowerHeight1,
                                        TowerHeight2, AntennaHeight1, AntennaHeight2, PathDistance, Site1, Site2, FeetMeters)  # Create scripts
 
+            self.progressVal += 0.1
+            self.progress.emit(self.progressVal)
+
             self.createDataFiles(InFolder, OutFolder, ProfileNumber,
                                  CleanUpScriptFile, Flag2, AntennaHeight1)  # Create data files
+            
+            self.progressVal += 0.1
+            self.progress.emit(self.progressVal)
 
         return
 
@@ -242,6 +260,7 @@ class Worker(QObject):
                     Max = float(T2)
                 if(float(P2) < Min):
                     Max = float(P2)
+                    
         del input_df
 
         InFolderFile2 = (InFolder + "\PR" + str(ProfileNumber) + ".CSV")
@@ -271,6 +290,7 @@ class Worker(QObject):
         Min = str(Min)
 
         MainScriptFile.write("set yrange[" + Min + " to " + Max + "]\n")
+
 
         #Set X range
         Increment = float(PathDistance) / 50
@@ -335,6 +355,7 @@ class Worker(QObject):
         pr_df = pd.read_csv(PRFileName)  # 32
 
         ev_length = ev_df.shape[0]
+        
         for index3 in range(0, ev_length):
             LocationCounter = LocationCounter + 1
 
@@ -445,6 +466,7 @@ class Worker(QObject):
                     MainScriptFile.write("set arrow head from " + str(Dist2) +
                                          "," + Ht2Down + " to " + str(Dist2) + "," + Ht2Up + "\n")
 
+
         del ev_df
         del pr_df
         Elev2 = float(Elev) + float(TowerHeight2)
@@ -468,6 +490,11 @@ class Worker(QObject):
 
         MainScriptFile.close()
 
+        
+        self.progressVal += 0.5
+        self.progress.emit(self.progressVal)
+
+
         #Update the cleanup script
         TPScript = (OutFolder + "\T0" + ProfileNumber + ".gp")
         CleanUpScriptFile.write("DEL " + TPScript + "\n")
@@ -483,6 +510,9 @@ class Worker(QObject):
         TPScript = (OutFolder + "\P2" + ProfileNumber + ".gp")
         if(Flag2 == 1):
             CleanUpScriptFile.write("DEL " + TPScript + "\n")
+
+        self.progressVal += 0.1
+        self.progress.emit(self.progressVal)
 
         return Flag2
 
@@ -606,6 +636,9 @@ class Worker(QObject):
             if(Flag2 == 1):
                 Pdata2File.write(str(Dist1) + chr(9) + P2 + "\n")
 
+            self.progressVal += 0.1
+            self.progress.emit(self.progressVal)
+
         Tdata0File.close()
         Tdata1File.close()
         Tdata2File.close()
@@ -616,18 +649,40 @@ class Worker(QObject):
 
         return
 
-
     def endProgram():  # 9999
-        print("here 562")
         mainObj.setTerminalTxt("\nProgram Completed")
         input("\nPress <Enter> key to clear this window")
         sys.exit(mainObj.app.exec_())
 
-
     def run(self):
-        self.mainObj1.setTerminalTxt("Reading <Criteria.ini> initialization file.\n")
+        
+        mainObj.ex.Btn_start.setEnabled(False)
+        mainObj.ex.Btn_start.setText("Started")
+        mainObj.ex.Btn_start.setStyleSheet("""
+                                           QPushButton{
+                                        font: 87 8pt "Arial Black";      
+                                        background-color: rgb(112, 158, 238);
+                                        color: rgb(50, 50, 50);
+                                        border: 2px solid rgb(13, 61, 144);
+                                        border-radius: 10px
+                                        }
+                                        """)
+        
+        os.system('cls' if os.name == 'nt' else 'clear')
 
-        Criteria = (self.FolderPath + "//Criteria.ini")
+        mainObj.ex.label_terminalTxt.setText("Path Profile Plotting Program")
+        mainObj.setTerminalTxt("\n(C) TeleVision, Inc.")
+        mainObj.setTerminalTxt("georgekizer@gmail.com")
+        mainObj.setTerminalTxt("972.333.0712 / 972.618.2890\n")
+
+        self.FolderPath = mainObj.filer.openFolderNameDialog(
+            "Enter name of folder(s) containing the input (e.g., ProfData)")
+
+        
+        mainObj.setTerminalTxt(
+            "Reading <Criteria.ini> initialization file.\n")
+
+        Criteria = (self.FolderPath + "\Criteria.ini")
 
         #Initialization subroutine
         Answers = self.initializeSubroutine(Criteria)  # 9000
@@ -641,7 +696,8 @@ class Worker(QObject):
         if (FeetMeters == "F" or FeetMeters == "M"):
             pass
         else:
-            mainObj.setTerminalTxt("Fourth line of <Criteria.ini> not understood.")
+            mainObj.setTerminalTxt(
+                "Fourth line of <Criteria.ini> not understood.")
             mainObj.setTerminalTxt("Line should be F or M.")
             mainObj.setTerminalTxt(" Program; Terminated.")
             self.endProgram()  # 9999
@@ -668,38 +724,50 @@ class Worker(QObject):
         if(SysOpt == "Y"):
             mainObj.setTerminalTxt("\nCreating Optimized path profiles\n")
 
-            InFolder = self.FoderPath + "\Optimize"
-            OutFolder = self.FoderPath + "\ProfOpt"
+            InFolder = self.FolderPath + "\Optimize"
+            OutFolder = self.FolderPath + "\ProfOpt"
             InputFolder = InFolder + "\PATHINFO.CSV"
+            
+            self.progressVal += 0.3 
+            self.progress.emit(self.progressVal)
+            
             self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
 
-            self.progress.emit(2)
 
         if(SysFail == "Y"):
             mainObj.setTerminalTxt("\nCreating Failed path profiles\n")
 
-            InFolder = self.FoderPath + "\Failed"
-            OutFolder = self.FoderPath + "\ProfFail"
+            InFolder = self.FolderPath + "\Failed"
+            OutFolder = self.FolderPath + "\ProfFail"
             InputFolder = InFolder + "\PATHINFO.CSV"
+            
+            self.progressVal += 0.3
+            self.progress.emit(self.progressVal)
 
             self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
-
-            self.progress.emit(3)
 
         if(SysPass == "Y"):
             mainObj.setTerminalTxt("\nCreating Passed path profiles\n")
 
-            InFolder = self.FoderPath + "\Passed"
-            OutFolder = self.FoderPath + "\ProfPass"
+            InFolder = self.FolderPath + "\Passed"
+            OutFolder = self.FolderPath + "\ProfPass"
             InputFolder = InFolder + "\PATHINFO.CSV"
+            
+            self.progressVal += 0.3
+            self.progress.emit(self.progressVal)
+            
             self.createProfile(InputFolder, OutFolder, InFolder, FeetMeters)
 
-            self.progress.emit(4)
+        self.progressVal = 12500
 
+        self.progress.emit(12500)
         self.finished.emit()
+        mainObj.setTerminalTxt("\nDone")
 
 ################################################# PyQT GUI Class ###################################################
 # Based on code from https://pythonspot.com/pyqt5-file-dialog/
+
+
 class App(PyQt5.QtWidgets.QWidget):
 
     def __init__(self):
@@ -721,10 +789,8 @@ class App(PyQt5.QtWidgets.QWidget):
 ################################################# End PyQT GUI Class ###################################################
 
 
+if __name__ == "__main__":
 
+    mainObj = Main()
+    mainObj.finalTask()
 
-# if __name__ == "__main__":
-print("here 725")
-mainObj = Main()
-mainObj.finalTask()
-print("here 727")

@@ -3,6 +3,43 @@ import json
 from PyQt5 import QtCore, QtGui, QtWidgets, QtNetwork, QtWebEngineWidgets
 
 
+# class for scrollable label
+class ScrollLabel(QtWidgets.QScrollArea):
+
+    # constructor
+    def __init__(self, *args, **kwargs):
+        QtWidgets.QScrollArea.__init__(self, *args, **kwargs)
+
+        # making widget resizable
+        self.setWidgetResizable(True)
+
+        # making qwidget object
+        content = QtWidgets.QWidget(self)
+        self.setWidget(content)
+
+        # vertical box layout
+        lay = QtWidgets.QVBoxLayout(content)
+
+        # creating label
+        self.label = QtWidgets.QLabel(content)
+
+        # setting alignment to the text
+        self.label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+
+        # making label multi-line
+        self.label.setWordWrap(True)
+
+        # adding label to the layout
+        lay.addWidget(self.label)
+
+    # the setText method
+    def setText(self, text):
+        # setting text to the label
+        self.label.setText(text)
+        
+    def text(self):
+        return self.label.text()
+
 class Ui_ProfileA_Window(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -24,50 +61,82 @@ class Ui_ProfileA_Window(QtWidgets.QMainWindow):
         self.Btn_home = QtWidgets.QPushButton(self.accountFrame)
         self.Btn_home.setGeometry(QtCore.QRect(0, 260, 231, 71))
         self.Btn_home.setMouseTracking(True)
-        self.Btn_home.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                    "color:white;\n"
-                                    "border: none;\n"
+        self.Btn_home.setStyleSheet("""
+                                        QPushButton
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        border: none;
+                                        }
+                                        QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        background-color: rgb(255, 255, 255);
+                                        color: rgb(8, 44, 108);
+                                        }
+                                        """
                                     )
         self.Btn_home.setFlat(True)
         self.Btn_home.setObjectName("Btn_home")
         self.pushButton_2 = QtWidgets.QPushButton(self.accountFrame)
         self.pushButton_2.setGeometry(QtCore.QRect(170, 360, 231, 71))
-        self.pushButton_2.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                        "color:white;\n"
-                                        "border: none;\n"
-                                        "QPushButton::hover"
-                                        "{"
-                                        "background-color: rgb(255, 255, 255);"
-                                        "color: rgb(8, 44, 108);"
-                                        "}"
+        self.pushButton_2.setStyleSheet("""
+                                            QPushButton
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        border: none;
+                                        }
+                                        QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        background-color: rgb(255, 255, 255);
+                                        color: rgb(8, 44, 108);
+                                        }
+                                        
+                                        """
                                         )
         self.pushButton_2.setFlat(True)
         self.pushButton_2.setObjectName("pushButton_2")
         self.Btn_NetCorfig = QtWidgets.QPushButton(self.accountFrame)
         self.Btn_NetCorfig.setGeometry(QtCore.QRect(0, 340, 231, 71))
         self.Btn_NetCorfig.setMouseTracking(True)
-        self.Btn_NetCorfig.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                         "color:white;\n"
-                                         "border: none;\n"
-                                         "QPushButton::hover"
-                                         "{"
-                                         "background-color: rgb(255, 255, 255);"
-                                         "color: rgb(8, 44, 108);"
-                                         "}"
+        self.Btn_NetCorfig.setStyleSheet("""
+                                             QPushButton
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        border: none;
+                                        }
+                                        QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        background-color: rgb(255, 255, 255);
+                                        color: rgb(8, 44, 108);
+                                        }
+                                        
+                                        """
                                          )
         self.Btn_NetCorfig.setFlat(True)
         self.Btn_NetCorfig.setObjectName("Btn_NetCorfig")
         self.Btn_FAQ = QtWidgets.QPushButton(self.accountFrame)
         self.Btn_FAQ.setGeometry(QtCore.QRect(0, 550, 231, 71))
         self.Btn_FAQ.setMouseTracking(True)
-        self.Btn_FAQ.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                   "color:white;\n"
-                                   "border: none;\n"
-                                   "QPushButton::hover"
-                                   "{"
-                                   "background-color: rgb(255, 255, 255);"
-                                   "color: rgb(8, 44, 108);"
-                                   "}"
+        self.Btn_FAQ.setStyleSheet("""
+                                             QPushButton
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        border: none;
+                                        }
+                                        QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        background-color: rgb(255, 255, 255);
+                                        color: rgb(8, 44, 108);
+                                        }
+                                        
+                                        """
                                    )
         self.Btn_FAQ.setCheckable(False)
         self.Btn_FAQ.setFlat(True)
@@ -75,14 +144,21 @@ class Ui_ProfileA_Window(QtWidgets.QMainWindow):
         self.Btn_CheckOut = QtWidgets.QPushButton(self.accountFrame)
         self.Btn_CheckOut.setGeometry(QtCore.QRect(0, 630, 231, 71))
         self.Btn_CheckOut.setMouseTracking(True)
-        self.Btn_CheckOut.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                        "color:white;\n"
-                                        "border: none;\n"
-                                        "QPushButton::hover"
-                                        "{"
-                                        "background-color: rgb(255, 255, 255);"
-                                        "color: rgb(8, 44, 108);"
-                                        "}"
+        self.Btn_CheckOut.setStyleSheet("""
+                                            QPushButton
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        border: none;
+                                        }
+                                        QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";
+                                        background-color: rgb(255, 255, 255);
+                                        color: rgb(8, 44, 108);
+                                        }
+                                        
+                                        """
                                         )
         self.Btn_CheckOut.setFlat(True)
         self.Btn_CheckOut.setObjectName("Btn_CheckOut")
@@ -120,7 +196,7 @@ class Ui_ProfileA_Window(QtWidgets.QMainWindow):
         self.frm_TerminalBg.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frm_TerminalBg.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frm_TerminalBg.setObjectName("frm_TerminalBg")
-        self.label_terminalTxt = QtWidgets.QLabel(self.frm_TerminalBg)
+        self.label_terminalTxt = ScrollLabel(self.frm_TerminalBg)
         self.label_terminalTxt.setGeometry(QtCore.QRect(10, 10, 861, 301))
         self.label_terminalTxt.setStyleSheet("color : green;")
         self.label_terminalTxt.setAlignment(
@@ -134,10 +210,24 @@ class Ui_ProfileA_Window(QtWidgets.QMainWindow):
         self.Btn_start = QtWidgets.QPushButton(self.frame_MainBody)
         self.Btn_start.setGeometry(QtCore.QRect(570, 160, 230, 70))
         self.Btn_start.setMouseTracking(True)
-        self.Btn_start.setStyleSheet("font: 87 8pt \"Arial Black\";\n"
-                                     "color:white;\n"
-                                     "background-color: rgb(8, 44, 108);"
-                                     "border: none;\n"
+        self.Btn_start.setStyleSheet("""
+                                     QPushButton
+                                     {
+                                        font: 87 8pt "Arial Black";
+                                        color:white;
+                                        background-color: rgb(8, 44, 108);
+                                        border: none;
+                                        border-radius: 10px;
+                                     }
+                                     QPushButton:hover
+                                        {
+                                        font: 87 8pt "Arial Black";      
+                                        background-color: rgb(72, 128, 225);
+                                        color: rgb(192, 192, 192);
+                                        border: 2px solid rgb(13, 61, 144);
+                                        border-radius: 10px
+                                        }
+                                     """
                                      )
         self.Btn_start.setFlat(True)
         self.Btn_start.setObjectName("Btn_start")
