@@ -1,7 +1,7 @@
 import os
 import sys
 from threading import main_thread
-from profileAUI import Ui_ProfileA_Window, QGoogleMap
+from profileAUI import Ui_Window
 import PyQt5
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import pandas as pd
@@ -21,7 +21,7 @@ class Main():
         self.filer = App()
 
         self.ProfileA_Window = PyQt5.QtWidgets.QApplication(sys.argv)
-        self.ex = Ui_ProfileA_Window()
+        self.ex = Ui_Window(1)
 
     def reportProgress(self, n):
         self.ex.progressBar.setProperty("value", n*0.008)
