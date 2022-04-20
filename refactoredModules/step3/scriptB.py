@@ -1115,3 +1115,4 @@ class ScriptB(object):
 # test.setTerrainFolder("E:\Terrain")
 # test.setOption(4)
 # test.execute()
+input("Press Enter to exit")

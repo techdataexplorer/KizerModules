@@ -12,6 +12,7 @@ from pandas.core.indexing import convert_to_index_sliceable
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import sys
 
 
 class PathsA(object):
@@ -1057,11 +1058,50 @@ class PathsA(object):
             # self.MaxDataPointsN = input("The final profile number of points will be between N and 2N ")
             self.makeFiles(self.FolderPath, self.Answers, self.LandUse, self.MaxDataPointsN, self.DistanceFraction)
 
+################################################## PyQT GUI Class ###################################################
+# Based on code from https://pythonspot.com/pyqt5-file-dialog/
+
+class App(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.title = 'PyQt5 file dialogs - pythonspot.com'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 480
+
+    def openFileNameDialog(self, filePrompt):
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+        
+        fileName, _ = QFileDialog.getOpenFileName(self, filePrompt, "","All Files (*);;CSV Files (*.csv)", options=options)
+        if fileName:
+            return fileName
+
+    def openFolderNameDialog(self, folderPrompt):
+        folderName = QFileDialog.getExistingDirectory(self, folderPrompt)
+        if folderName:
+            return folderName
+
+################################################## End PyQT GUI Class ###################################################
+
+## crate pyqt object
+app = QApplication(sys.argv)
+ex = App()
+
+
 
 # ### Test call the modules ###
-# testPathA = PathsA()
+testPathA = PathsA()
 # testPathA.setFolderPath("C:/Users/sixpa/tdx/ExampleStep2BN")
+folderPath = ex.openFolderNameDialog("Find ExampleStep2BN Folder")
+testPathA.setFolderPath(folderPath)
 # testPathA.setLULC("Y")
+LULC = input("Do you intend to use Land Clutter? (Y or N): ")
+testPathA.setLULC(LULC)
 # testPathA.setCompressionOption(1)
-# testPathA.executeProgram()
-# testPathA.makeFiles(self.FolderPath,Answers,LandUse,MaxDataPointsN,DistanceFraction)
+compressionOption = input("Enter the compression option: ")
+testPathA.setCompressionOption(compressionOption)
+testPathA.executeProgram()
+testPathA.makeFiles(self.FolderPath,Answers,LandUse,MaxDataPointsN,DistanceFraction)

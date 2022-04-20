@@ -299,3 +299,4 @@ ExampleS3FolderPath = ex.openFolderNameDialog("Find ExampleS3 Folder")
 ###"C:/Users/ecuth/Desktop/Spatial Datalyst/Kizer/Path Design 11 April 2021/Step 3 Path Availability/ExampleStep3"
 test.setFolderPath(ExampleS3FolderPath)
 test.execute()
+input("Press Enter to exit")

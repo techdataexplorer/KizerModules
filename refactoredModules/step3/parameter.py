@@ -259,3 +259,4 @@ test.setFolderPath(ExampleS3FolderPath)
 test.setMilesKm(milesKm=input("Enter M or K(Miles or Kilometer): "))
 
 test.execute()
+input("Press Enter to exit")

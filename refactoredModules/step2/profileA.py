@@ -635,3 +635,4 @@ class ProfileA(object):
 #test = ProfileA()
 #test.setFolderPath("C:\ExampleStep2BY(Eric)")
 #test.execute()
+input("Press Enter to exit")
