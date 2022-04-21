@@ -1283,8 +1283,10 @@ for index in range(1, NUMBER_OF_RADIOS):
         PrintFile = PrintFile + "," + str(Frequency) + "," + str(Polarization) + "," + str(Model) + "," + str(Antenna) + "," + str(Bandwidth)
         PrintFile = PrintFile + "," + str(Modulation) + "," + str(Capacity) + "," + str(Power) + "," + str(Threshold)
         PrintFile = PrintFile + "," + str(SystemGain) + "," + str(LinkBudget)
+        PrintFile = PrintFile + '\n'
 
-
+        output_df.write(PrintFile)
+        
         # PRINT #1, PrintFile$ #### write to file here
 
         
