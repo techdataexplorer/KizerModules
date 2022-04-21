@@ -80,8 +80,8 @@ class ScriptA(object):
         self.AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
 
         if self.TheOption == 4:
-            self.Gtopo30[0][0] = T1
-            self.Gtopo30[0][1] = T2
+            self.Gtopo30[0][0] = self.T1
+            self.Gtopo30[0][1] = self.T2
         else:
             if self.LandUseFlag == 0:
                 LatInc = 1
@@ -171,8 +171,8 @@ class ScriptA(object):
         self.AddGlobalFile(FirstFlag, Latitude, Longitude, USGSindxFilePath, USGS250kFilePath, NumTerrainFiles)
 
         if self.TheOption == 4:
-            self.Gtopo30[1][0] = T1
-            self.Gtopo30[1][1] = T2
+            self.Gtopo30[1][0] = self.T1
+            self.Gtopo30[1][1] = self.T2
             if self.Gtopo30[0][0] != self.Gtopo30[1][0] and self.Gtopo30[0][1] != self.Gtopo30[1][1]:
                 FirstFlag = 2
                 #GOSUB 1050 # AddGlobalFile
@@ -1441,7 +1441,7 @@ class ScriptA(object):
 
         maps_df.write(ProjectionFile + "\n")
 
-        print(self.GlobalTerrain[T])
+        #print(self.GlobalTerrain[T])
         for T in range(self.MaxGlobal):
             if self.GlobalTerrain[T] != "":
                 DataFile = self.TerrainFolderPath + str(self.GlobalTerrain[T])
@@ -1452,8 +1452,50 @@ class ScriptA(object):
         print()
 
 
+################################################## PyQT GUI Class ###################################################
+# Based on code from https://pythonspot.com/pyqt5-file-dialog/
 
+class App(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.title = 'PyQt5 file dialogs - pythonspot.com'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 480
+
+    def openFileNameDialog(self, filePrompt):
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+        
+        fileName, _ = QFileDialog.getOpenFileName(self, filePrompt, "","All Files (*);;CSV Files (*.csv)", options=options)
+        if fileName:
+            return fileName
+
+    def openFolderNameDialog(self, folderPrompt):
+        folderName = QFileDialog.getExistingDirectory(self, folderPrompt)
+        if folderName:
+            return folderName
+
+################################################## End PyQT GUI Class ###################################################
+
+## crate pyqt object
+app = QApplication(sys.argv)
+ex = App()
 
 # test class
-# test = ScriptA()
-# test.execute()
+test = ScriptA()
+
+ExampleStep2FolderPath = ex.openFolderNameDialog("Find ExampleStep2A Folder")
+test.setFolderPath(ExampleStep2FolderPath)
+TerrainPath = ex.openFolderNameDialog("Find Terrain Folder")
+test.setTerrainDataPath(TerrainPath)
+terrOption = input("Enter the Terrain Option (1-8): ")
+test.setTerrainOption(terrOption)
+LULCOption = input("Enter the Land Use Land Clutter (y or n): ")
+test.setLULC(LULCOption)
+retainOption = input("Enter the Retain Index (y or n): ")
+test.setRetainIndex(retainOption)
+
+test.execute()
