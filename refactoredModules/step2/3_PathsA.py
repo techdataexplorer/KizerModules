@@ -13,6 +13,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
+from sqlalchemy import null
+
 
 
 class PathsA(object):
@@ -32,7 +34,7 @@ class PathsA(object):
         self.FolderPath = str(folderPath)
 
     def setLULC(self, landUse):
-        self.LandUse = landUse
+        self.LandUse = landUse.upper()
 
     def setMaxDataPoints(self, maxDataPoints):
         self.maxDataPointsN = int(maxDataPoints)
@@ -62,7 +64,8 @@ class PathsA(object):
         PathDataFileName = self.FolderPath + "\TempFile\\" + "PathData.CSV" #67
         PathFreqFile = open(PathFreqFileName, "w")
         PathDataFile = open(PathDataFileName, "w")
-        PathFileName = self.FolderPath + "\\" + DataFile + ".CSV"
+        PathFileName = self.FolderPath + "/" + DataFile + ".CSV"
+        print(PathFileName)
         PathFile_df = pd.read_csv(PathFileName, header = None)#10
 
         for index, pfRow in PathFile_df.iterrows():
@@ -216,7 +219,8 @@ class PathsA(object):
             TempFilePA.close()
 
             #Compress profile file - Pass B ++++++++++++++++++++++++++++++++++
-
+            #added this variable
+            CompressionRatio = 0
             if(self.CompChoice == 1):
                 CompressionRatio = 1
             if(self.CompChoice == 2):
@@ -389,7 +393,7 @@ class PathsA(object):
                         TempFilePC.write(str(DistanceC) + "," + str(ELEVATIONC) + "," + str(ObstructionHeightC) + "," + LUcodeC + "," + LANDUSECODEC + "\n")
                         break
 
-                    addTrees(ELEVATIONA,ELEVATIONB,ELEVATIONC,TreeHt,DistanceB,SiteDistance4MinInf,SiteDistance4Min43,SiteDistance4Min1,SiteDistance4Min23,SiteDistance4Min12,SiteDistance4Min512,SiteDistance4Min410)
+                    self.addTrees(ELEVATIONA,ELEVATIONB,ELEVATIONC,TreeHt,DistanceB,SiteDistance4MinInf,SiteDistance4Min43,SiteDistance4Min1,SiteDistance4Min23,SiteDistance4Min12,SiteDistance4Min512,SiteDistance4Min410)
                     TempFilePC.write(str(DistanceB) + "," + str(ELEVATIONB) + "," + str(ObstructionHeightB) + "," + LUcodeB + "," + LANDUSECODEB + "\n")
 
 
@@ -441,7 +445,7 @@ class PathsA(object):
 
 
     #2000 (never gets called)
-    def evalPoint(distance,ELEVATION,ObstructionHeight,Eval,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,AntHt1,AntHt2,Site2Distance,SecondKFactor,ITURkFactor,FeetMeters,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag):
+    def evalPoint(self,distance,ELEVATION,ObstructionHeight,Eval,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,AntHt1,AntHt2,Site2Distance,SecondKFactor,ITURkFactor,FeetMeters,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag):
 
         distance = float(distance)
         ELEVATION = float(ELEVATION)
@@ -628,7 +632,7 @@ class PathsA(object):
 
 
     #3000
-    def addTrees(ELEVATIONA,ELEVATIONB,ELEVATIONC,TreeHt,DistanceB,SiteDistance4MinInf,SiteDistance4Min43,SiteDistance4Min1,SiteDistance4Min23,SiteDistance4Min12,SiteDistance4Min512,SiteDistance4Min410):
+    def addTrees(self,ELEVATIONA,ELEVATIONB,ELEVATIONC,TreeHt,DistanceB,SiteDistance4MinInf,SiteDistance4Min43,SiteDistance4Min1,SiteDistance4Min23,SiteDistance4Min12,SiteDistance4Min512,SiteDistance4Min410):
 
         #Put tree at path inflection point
         if((ELEVATIONA < ELEVATIONB) and (ELEVATIONB > ELEVATIONC)):
@@ -884,7 +888,7 @@ class PathsA(object):
         return ARCSIN
 
     #6200 (never gets called)
-    def arcCos(X, PI):
+    def arcCos(self,X, PI):
 
         if(abs(X) > 1):
             XMOD = X / abs(X)
@@ -904,7 +908,7 @@ class PathsA(object):
         return ARCCOS
 
     #8000 (never gets called)
-    def optimizeTower(TwrHtFlag,START1,END1,START2,END2,FolderPath,ProfileNumber,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,Site2Distance,SecondKFactor,ITURkFactor,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag):
+    def optimizeTower(self,TwrHtFlag,START1,END1,START2,END2,FolderPath,ProfileNumber,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,Site2Distance,SecondKFactor,ITURkFactor,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag):
 
         if(TwrHtFlag == 0):
             IISTART = START1
@@ -949,7 +953,7 @@ class PathsA(object):
                     continue
                 else:
                     Eval = 2
-                    evalPoint(distance,ELEVATION,ObstructionHeight,Eval,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,AntHt1,AntHt2,Site2Distance,SecondKFactor,ITURkFactor,self.FeetMeters,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag)
+                    self.evalPoint(distance,ELEVATION,ObstructionHeight,Eval,Site1Elevation,Site2Elevation,TwrHt1,TwrHt2,AntHt1,AntHt2,Site2Distance,SecondKFactor,ITURkFactor,self.FeetMeters,ALUkFactor,FirstKFactor,DLaneTest,FirstFresnelFraction,SecondFresnelFraction,PathEval,WorstCaseObst,OpFreq,AddlClearance,Test2Flag)
 
             del pc_df
 
@@ -1042,17 +1046,17 @@ class PathsA(object):
             print(" Program; Terminated.")
             self.endProgram()#9999
 
-        if(self.CompChoice == 1):
+        if(int(self.CompChoice) == 1):
             self.MaxDataPointsN = 1
             self.DistanceFraction = None
             self.makeFiles(self.FolderPath, self.Answers, self.LandUse, self.MaxDataPointsN, self.DistanceFraction)
 
-        if(self.CompChoice == 2):
+        if(int(self.CompChoice) == 2):
             self.MaxDataPointsN = 1
             # self.DistanceFraction = input("\nEnter approximate fraction of a mile or kilometer for path increments\n")
             self.makeFiles(self.FolderPath, self.Answers, self.LandUse, self.MaxDataPointsN, self.DistanceFraction)
 
-        if(self.CompChoice == 3):
+        if(int(self.CompChoice) == 3):
             self.DistanceFraction = None
             # print("\nEnter approximate maximum number of path profile data points (N).")
             # self.MaxDataPointsN = input("The final profile number of points will be between N and 2N ")
@@ -1095,13 +1099,16 @@ ex = App()
 # ### Test call the modules ###
 testPathA = PathsA()
 # testPathA.setFolderPath("C:/Users/sixpa/tdx/ExampleStep2BN")
-folderPath = ex.openFolderNameDialog("Find ExampleStep2BN Folder")
+folderPath = ex.openFolderNameDialog("Find ExampleStep2BY Folder")
 testPathA.setFolderPath(folderPath)
 # testPathA.setLULC("Y")
 LULC = input("Do you intend to use Land Clutter? (Y or N): ")
 testPathA.setLULC(LULC)
 # testPathA.setCompressionOption(1)
 compressionOption = input("Enter the compression option: ")
-testPathA.setCompressionOption(compressionOption)
+testPathA.setCompressionOption(compressionOption)#enter 1
 testPathA.executeProgram()
-testPathA.makeFiles(self.FolderPath,Answers,LandUse,MaxDataPointsN,DistanceFraction)
+
+#do i need this line? i dont think so
+#testPathA.makeFiles(testPathA.FolderPath,testPathA.Answers,testPathA.LandUse,testPathA.MaxDataPointsN,testPathA.DistanceFraction)
+input("Press Enter to exit")
