@@ -619,6 +619,7 @@ class GudPath(object):
         PathFileFilePath = self.ExampleS2AFolderPath + "/" + TheDataFile + ".csv"
         data_file_df = pd.read_csv(PathFileFilePath)            #10
 
+        print(PathFileFilePath)
         # Begin path profile evaluation
         Headers = list(data_file_df.columns)
         HEADER1 = Headers[0]
@@ -1372,12 +1373,51 @@ class GudPath(object):
         print("\nProgram Completed\n")
         # =======
 
+################################################## PyQT GUI Class ###################################################
+# Based on code from https://pythonspot.com/pyqt5-file-dialog/
+
+class App(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.title = 'PyQt5 file dialogs - pythonspot.com'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 480
+
+    def openFileNameDialog(self, filePrompt):
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+        
+        fileName, _ = QFileDialog.getOpenFileName(self, filePrompt, "","All Files (*);;CSV Files (*.csv)", options=options)
+        if fileName:
+            return fileName
+
+    def openFolderNameDialog(self, folderPrompt):
+        folderName = QFileDialog.getExistingDirectory(self, folderPrompt)
+        if folderName:
+            return folderName
+
+################################################## End PyQT GUI Class ###################################################
+## crate pyqt object
+app = QApplication(sys.argv)
+ex = App()
+
 
 
 # test the class
 test = GudPath()
-test.setFolderPath("C:\ExampleStep2BN(Eric)")
-test.setLULC("y")
-test.setPathEval(1)
-test.setOptimizePathsOption("n")
+ExampleStep2FolderPath = ex.openFolderNameDialog("Find ExampleStep2A Folder")
+test.setFolderPath(ExampleStep2FolderPath)
+LULCOption = input("Do the profiles contain use  land cover (LULC) data (Y or N)?")
+test.setLULC(LULCOption)
+print("Path evaluation will require a <Criteria.ini> file in the main folder.\n")
+print("Input 1 to use path profile obstructions with assumed heights for evals.")
+print("Input 2 to use worst case obstruction height for EACH path sample point.")
+PathEval = input(": ")
+test.setPathEval(PathEval)
+OptimizePaths = input("After evaluating the paths do you want to optimize the good paths (Y or N): ")
+test.setOptimizePathsOption(OptimizePaths)
 test.execute()
+input("Press Enter to exit")
