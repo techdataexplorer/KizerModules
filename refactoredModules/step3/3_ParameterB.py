@@ -1,8 +1,9 @@
 # 5/18/21 Updated file paths to pull data from my machine
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QLineEdit, QFileDialog
-from PyQt5.QtGui import QIcon
+import time
+#from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QLineEdit, QFileDialog
+#from PyQt5.QtGui import QIcon
 import os
 import numpy as np
 import pandas as pd
@@ -79,23 +80,66 @@ class ParameterB(object):
         ThePathParameter = "100"
 
         for index, row in df.iterrows():
-            ALongitude = row[0]
-            ALatitude = row[1]
-            APathParameter = row[2]
+            #ALongitude = row[0]
+            #ALatitude = row[1]
+            #APathParameter = row[2]
 
-            LATITUDEA = AvgLatitude
-            LONGITUDEA = AvgLongitude
-            LATITUDEB = float(ALatitude)
-            LONGITUDEB = float(ALongitude)
+            # LATITUDEA = AvgLatitude
+            # LONGITUDEA = AvgLongitude
+            # LATITUDEB = float(row[1])
+            # LONGITUDEB = float(row[0])
 
-            Distance = self.distance_between_a_and_b("M", LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB)
-            # print("Distance: ", Distance)
+            #LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB
+            Distance = self.distance_between_a_and_b(self.MilesKm, AvgLatitude, float(row[1]), AvgLongitude, float(row[0]))
+            #print("Distance: ", Distance)
 
             if Distance < TheDistance:
                 TheDistance = Distance
-                ThePathParameter = APathParameter
+                #if row[3] != null
+                ThePathParameter = row[2]
+                #temp = row[3]
+                #dn1nab = row[4]
+                #safeetnab = row[5]
+                
+
+
+            #if(index > 10):
+                #break
         
+        #print("THIS IS THE END")
+        print(Distance)
+        print(TheDistance)
+        print(ThePathParameter)
         return TheDistance, ThePathParameter
+
+    def bigPathParameter(self, df, AvgLatitude, AvgLongitude):  # find a path parameter
+        TheDistance = 500
+        ThePathParameter = "100"
+
+        for index, row in df.iterrows():
+            #ALongitude = row[0]
+            #ALatitude = row[1]
+            #APathParameter = row[2]
+
+            # LATITUDEA = AvgLatitude
+            # LONGITUDEA = AvgLongitude
+            # LATITUDEB = float(row[1])
+            # LONGITUDEB = float(row[0])
+
+            #LATITUDEA, LATITUDEB, LONGITUDEA, LONGITUDEB
+            Distance = self.distance_between_a_and_b(self.MilesKm, AvgLatitude, float(row[1]), AvgLongitude, float(row[0]))
+            #print("Distance: ", Distance)
+
+            if Distance < TheDistance:
+                TheDistance = Distance
+                #if row[3] != ''
+                climateFactor = row[2]
+                tempF = row[3]
+                dN1 = row[4]
+                saFeet = row[5]
+
+        return TheDistance, climateFactor, tempF, dN1, saFeet
+
 
     def execute(self):
         #empty array with 100 slots open, all values None
@@ -159,26 +203,41 @@ class ParameterB(object):
 
         # 'find parameters for the path
 
-        TheOutputDataFile12 = self.ExampleS3FolderPath + "/PathParameters.csv"
+        TheOutputDataFile12 = self.ExampleS3FolderPath + "/Data/PathParameters.csv"
 
         path_parameters_df = open(TheOutputDataFile12, "w+")
         path_parameters_df.write("Index,Path Distance (miles),Path Roughness (ft),Climate Factor,Temp (F),dN1,Sa (ft),Rain Rate,Relative Humidity,Lower Height (ft)\n")
 
         average_paths_df = pd.read_csv(TheOutputDataFile11)
 
-        ClimateFactorFilePath = self.ExampleS3FolderPath + "/Data/ClimateFactorNaA.csv"
+        combinedFilePath = self.ExampleS3FolderPath + "/Data/combinedFilePath.csv" #-180 to -50 -.25
+        # ClimateFactorFilePath = self.ExampleS3FolderPath + "/Data/ClimateFactorNaA.csv" #-180 to -50 -.25
+        # TempFAFilePath = self.ExampleS3FolderPath + "/Data/TempFnaB.csv"                #-180 to -50 -.25
+        # ITURdN1AFilePath =  self.ExampleS3FolderPath + "/Data/dN1naB.csv"               #-180 to -50 -.25
+        # ITURSaAFilePath = self.ExampleS3FolderPath + "/Data/SaFeetNaB.csv"              #-180 to -50 -.25
+        ITURR01AFilePath = self.ExampleS3FolderPath + "/Data/R01naB.csv"                #-180 to -50 -.125, 750k lines
+        RelHumAFilePath = self.ExampleS3FolderPath + "/Data/RelHumNaA.csv"              #80 lines
 
-        TempFAFilePath = self.ExampleS3FolderPath + "/Data/TempFnaB.csv"
+        ProfilesFolderPath = self.ExampleS3FolderPath + "/Profiles"             
 
-        ITURdN1AFilePath =  self.ExampleS3FolderPath + "/Data/dN1naB.csv"
 
-        ITURSaAFilePath = self.ExampleS3FolderPath + "/Data/SaFeetNaB.csv"
+        #make combined file of ClimateFactorNaA, TempFnaB, dN1naB, SaFeetNaB
+        #make combined file of above plus R01naB with null values
 
-        ITURR01AFilePath = self.ExampleS3FolderPath + "/Data/R01naB.csv"
+        combinedDF = pd.read_csv(combinedFilePath) 
+        #climate_factor_df = pd.read_csv(ClimateFactorFilePath) 
+        #tempFA_df = pd.read_csv(TempFAFilePath) 
+        #ITURdN1A_df = pd.read_csv(ITURdN1AFilePath)
+        #ITURSaA_df = pd.read_csv(ITURSaAFilePath)
+        ITURR01A_df = pd.read_csv(ITURR01AFilePath)
+        RelHumA_df = pd.read_csv(RelHumAFilePath)
+        # print(len(climate_factor_df.index))
+        # print(len(tempFA_df.index))
+        # print(len(ITURdN1A_df.index))
+        # print(len(ITURSaA_df.index))
+        # print(len(ITURR01A_df.index))
+        # print(len(RelHumA_df.index))
 
-        RelHumAFilePath = self.ExampleS3FolderPath + "/Data/RelHumNaA.csv"
-
-        ProfilesFolderPath = self.ExampleS3FolderPath + "/Profiles"
 
         for index, row in average_paths_df.iterrows():
             PathIndex = int(row['Index'])
@@ -188,75 +247,99 @@ class ParameterB(object):
 
             # find the various parameters for the path
             self.pathRoughnessLowerHeight(PathIndex, ProfilesFolderPath)
+            TheDistance, TheClimateFactor[PathIndex], TempF[PathIndex], dN1[PathIndex], Sa[PathIndex]= self.bigPathParameter(combinedDF, AvgLatitude, AvgLongitude) 
+            print(TheDistance, TheClimateFactor[PathIndex],TempF[PathIndex], dN1[PathIndex], Sa[PathIndex])
 
-            climate_factor_df = pd.read_csv(ClimateFactorFilePath) 
-            TheDistance, TheClimateFactor[PathIndex] = self.pathParameter(climate_factor_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "Climate Factor = " + str(TheClimateFactor[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
-            tempFA_df = pd.read_csv(TempFAFilePath) 
-            TheDistance, TempF[PathIndex] = self.pathParameter(tempFA_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "Average Temperture (F) = " + str(TempF[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+            # #climate_factor_df = pd.read_csv(ClimateFactorFilePath) 
+            #TheDistance, TheClimateFactor[PathIndex] = self.pathParameter(climate_factor_df, AvgLatitude, AvgLongitude) 
+            # #exit(1)
+            # print(TheDistance, TheClimateFactor[PathIndex])
+            # print(str(PathIndex) + " , " + "Climate Factor = " + str(TheClimateFactor[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
-            ITURdN1A_df = pd.read_csv(ITURdN1AFilePath)
-            TheDistance, dN1[PathIndex] = self.pathParameter(ITURdN1A_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "Refractivity Gradient = " + str(dN1[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+            # #tempFA_df = pd.read_csv(TempFAFilePath) 
+            #TheDistance, TempF[PathIndex] = self.pathParameter(tempFA_df, AvgLatitude, AvgLongitude) 
+            # print(TheDistance, TempF[PathIndex])
+            # print(str(PathIndex) + " , " + "Average Temperture (F) = " + str(TempF[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
-            ITURSaA_df = pd.read_csv(ITURSaAFilePath)
-            TheDistance, Sa[PathIndex] = self.pathParameter(ITURSaA_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "ITR-R Roughness = " + str(Sa[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+            # #ITURdN1A_df = pd.read_csv(ITURdN1AFilePath)
+            #TheDistance, dN1[PathIndex] = self.pathParameter(ITURdN1A_df, AvgLatitude, AvgLongitude)
+            # print(TheDistance, dN1[PathIndex])
+            # print(str(PathIndex) + " , " + "Refractivity Gradient = " + str(dN1[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
-            ITURR01A_df = pd.read_csv(ITURR01AFilePath)
-            TheDistance, R01[PathIndex] = self.pathParameter(ITURR01A_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "ITR-R Rain Rate = " + str(R01[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+            # #ITURSaA_df = pd.read_csv(ITURSaAFilePath)
+            #TheDistance, Sa[PathIndex] = self.pathParameter(ITURSaA_df, AvgLatitude, AvgLongitude) 
+            # print(TheDistance, Sa[PathIndex])
+            # print(str(PathIndex) + " , " + "ITR-R Roughness = " + str(Sa[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
-            RelHumA_df = pd.read_csv(RelHumAFilePath)
+            # #ITURR01A_df = pd.read_csv(ITURR01AFilePath)
+            # TheDistance, R01[PathIndex] = self.pathParameter(ITURR01A_df, AvgLatitude, AvgLongitude) 
+            # print(TheDistance, R01[PathIndex])
+            # print(str(PathIndex) + " , " + "ITR-R Rain Rate = " + str(R01[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+
+            # #RelHumA_df = pd.read_csv(RelHumAFilePath)
             TheDistance, RelHum[PathIndex] = self.pathParameter(RelHumA_df, AvgLatitude, AvgLongitude) 
-            print(str(PathIndex) + " , " + "Relative Humidity = " + str(RelHum[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
+            print(TheDistance, RelHum[PathIndex])
+            # print(str(PathIndex) + " , " + "Relative Humidity = " + str(RelHum[PathIndex]) + " ,  Distance (miles) = " + str(TheDistance))
 
             path_parameters_df.write(str(PathIndex) + "," + str(PathDistance[PathIndex]) + "," + str(self.TheRoughness[PathIndex]) + "," + str(TheClimateFactor[PathIndex]) + "," + str(TempF[PathIndex]) + "," + str(dN1[PathIndex]) + "," + str(Sa[PathIndex]) + "," + str(R01[PathIndex]) + "," + str(RelHum[PathIndex]) + "," + str(self.TheHeight[PathIndex])  + '\n') # added  + '\n'
+            #print(str(PathIndex) + "," + str(PathDistance[PathIndex]) + "," + str(self.TheRoughness[PathIndex]) + "," + str(TheClimateFactor[PathIndex]) + "," + str(TempF[PathIndex]) + "," + str(dN1[PathIndex]) + "," + str(Sa[PathIndex]) + "," + str(R01[PathIndex]) + "," + str(RelHum[PathIndex]) + "," + str(self.TheHeight[PathIndex])  + '\n') # added  + '\n'
 
-        print("Program Completed")
+        print("\nProgram Completed")
 
-################################################## PyQT GUI Class ###################################################
-# Based on code from https://pythonspot.com/pyqt5-file-dialog/
+# ################################################## PyQT GUI Class ###################################################
+# # Based on code from https://pythonspot.com/pyqt5-file-dialog/
 
-class App(QWidget):
+# class App(QWidget):
 
-    def __init__(self):
-        super().__init__()
-        self.title = 'PyQt5 file dialogs - pythonspot.com'
-        self.left = 10
-        self.top = 10
-        self.width = 640
-        self.height = 480
+#     def __init__(self):
+#         super().__init__()
+#         self.title = 'PyQt5 file dialogs - pythonspot.com'
+#         self.left = 10
+#         self.top = 10
+#         self.width = 640
+#         self.height = 480
 
-    def openFileNameDialog(self, filePrompt):
-        options = QFileDialog.Options()
-        #options |= QFileDialog.DontUseNativeDialog
+#     def openFileNameDialog(self, filePrompt):
+#         options = QFileDialog.Options()
+#         #options |= QFileDialog.DontUseNativeDialog
         
-        fileName, _ = QFileDialog.getOpenFileName(self, filePrompt, "","All Files (*);;CSV Files (*.csv)", options=options)
-        if fileName:
-            return fileName
+#         fileName, _ = QFileDialog.getOpenFileName(self, filePrompt, "","All Files (*);;CSV Files (*.csv)", options=options)
+#         if fileName:
+#             return fileName
 
-    def openFolderNameDialog(self, folderPrompt):
-        folderName = QFileDialog.getExistingDirectory(self, folderPrompt)
-        if folderName:
-            return folderName
+#     def openFolderNameDialog(self, folderPrompt):
+#         folderName = QFileDialog.getExistingDirectory(self, folderPrompt)
+#         if folderName:
+#             return folderName
 
-################################################## End PyQT GUI Class ###################################################
+# ################################################## End PyQT GUI Class ###################################################
 
-## crate pyqt object
-app = QApplication(sys.argv)
-ex = App()
+# ## crate pyqt object
+# app = QApplication(sys.argv)
+# ex = App()
+
 
 
 
 test = ParameterB()
-ExampleS3FolderPath = ex.openFolderNameDialog("Find ExampleS3 Folder")
-#test.setFolderPath("C:/Users/ecuth/Desktop/Spatial Datalyst/Kizer/Path Design 11 April 2021/Step 3 Path Availability/ExampleStep3")
-test.setFolderPath(ExampleS3FolderPath)
+#ExampleS3FolderPath = ex.openFolderNameDialog("Find ExampleS3 Folder")
+test.setFolderPath("C:/Users/Public/QGIS TESTING/QGIS Input Files/Step 3/3 ParameterB - ExampleS3 - after 2 Roughness A")
+#test.setFolderPath(ExampleS3FolderPath)
 #test.setMilesKm("M")
-test.setMilesKm(milesKm=input("Enter M or K(Miles or Kilometer): "))
-
+#test.setMilesKm(milesKm=input("Enter M or K(Miles or Kilometer): "))
+tic = time.perf_counter()
 test.execute()
+toc = time.perf_counter()
+time = tic-toc
+print(f"Downloaded the tutorial in {toc - tic:0.4f} seconds")
+#Was originally 6 minutes 24 seconds (384 seconds)
+#Cut down to 3 minutes 48 seconds after combining ClimateFactorNaA, TempFnaB, dN1naB, SaFeetNaB into combinedFilePath.csv
+#Cut down to ... after combining combinedFilePath.csv and R01naB.csv into updatedCombinedFilePath.csv
+#only gets cut down like 3 min
+#under a minute without all that 750k lines of data 
+
+#make super big file with nul, 750k lines
+#make big file with every .25, 180k lines
+
 input("Press Enter to exit")
