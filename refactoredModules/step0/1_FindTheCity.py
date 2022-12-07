@@ -42,7 +42,7 @@ class FindTheCity(object):
 
     def execute(self):
 
-        CitiesFilePath = self.FolderPath + "/All Cities.csv"
+        CitiesFilePath = self.FolderPath + "/Cities.csv"
         #xlsCitiesFilePath = self.FolderPath + "/Other/All Cities.xls"
         cities_df = pd.read_csv(CitiesFilePath) 
         #print(cities_df)
