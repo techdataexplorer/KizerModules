@@ -42,7 +42,7 @@ class FindTheCity(object):
 
     def execute(self):
 
-        CitiesFilePath = self.FolderPath + "/Cities.csv"
+        CitiesFilePath = self.FolderPath + "/All Cities.csv"
         #xlsCitiesFilePath = self.FolderPath + "/Other/All Cities.xls"
         cities_df = pd.read_csv(CitiesFilePath) 
         #print(cities_df)
@@ -63,7 +63,9 @@ class FindTheCity(object):
                 smallestIndex = index
 
         answer_df = cities_df.iloc[smallestIndex]
+        print("City Found")
         print("The city is " + answer_df['Site'] + ", " + answer_df['State / Province'])
+        print("The city number is " + str(answer_df['Index']))
         print("\nProgram Completed")
 
 
@@ -74,8 +76,8 @@ test.setFolderPath(r"C:\Users\Public\QGIS TESTING\QGIS Input Files\Step 1")
 
 
 #mention how the lat needs to be within -90 and 90
-test.setLatitude(50)
-test.setLongitude(69)
+test.setLatitude(46)
+test.setLongitude(-84)
 
 #if the user wants to go again, do not ask for the file path, just ask for lat, long, and miles
 test.execute()
